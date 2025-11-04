@@ -8,10 +8,8 @@
  * - React Router (when added)
  * - Compose layouts, components, and hooks
  *
- * Examples:
- * export { HomePage } from './home-page'
- * export { AdminDashboard } from './admin-dashboard'
- * export { ProductPage } from './product-page'
+ * Exports:
+ * export { default as HomePage } from './HomePage'
  */
 
-export {};
+export { default as HomePage } from './HomePage';
