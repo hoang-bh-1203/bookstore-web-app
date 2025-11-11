@@ -75,7 +75,7 @@ export interface Book {
   dichGia: string;
   manufacturer: string;
   bookCover: string;
-  numberOfPage: string;
+  numberOfPage: number;
   stockQuantity: number;
   isActive: boolean;
   categoriesId: number;
@@ -99,6 +99,7 @@ export interface Order {
   status: string;
   createdAt?: string;
   address?: string;
+  phone?: string;
 }
 
 export interface OrderCreate {
@@ -153,7 +154,7 @@ export interface ProductSearchResponse {
 export interface CategoryWithThumbnail {
   id: number;
   name: string;
-  thumbnailUrl?: string | null;
+  thumbnailUrl?: string;
 }
 
 export interface ImageUploadResponse {

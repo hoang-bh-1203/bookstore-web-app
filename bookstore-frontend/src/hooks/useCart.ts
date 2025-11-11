@@ -1,108 +1,78 @@
-// src/hooks/useCart.ts (ĐÃ REFACTOR)
-import { notification } from 'antd';
+import { toast } from 'sonner';
 import type { CartItem, CartValidateResponse } from '@/constants/interfaces';
 import Request from '@/configs/api.ts';
 import { API_ENDPOINTS } from '@/constants/endpoint.ts';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useCartStore } from '@/stores/useCartStore';
+import { useCallback } from 'react';
 
 export const useCart = () => {
-  // 1. Lấy state và actions từ store
-  const {
-    items: cartItems,
-    addToCart: storeAddToCart,
-    updateQuantity,
-    removeFromCart,
-    clearCart,
-  } = useCartStore((state) => ({
-    items: state.items,
-    addToCart: state.addToCart,
-    updateQuantity: state.updateQuantity,
-    removeFromCart: state.removeFromCart,
-    clearCart: state.clearCart,
-  }));
+  // 1. Use stable selectors - only select what you need
+  const cartItems = useCartStore((state) => state.items);
+  const storeAddToCart = useCartStore((state) => state.addToCart);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const removeFromCart = useCartStore((state) => state.removeFromCart);
+  const clearCart = useCartStore((state) => state.clearCart);
 
-  // 2. Lấy state auth
+  // 2. Get auth state with stable selector
   const isAuthenticated = useAuthStore((state) => !!state.token);
 
-  // 3. Xóa BỎ TOÀN BỘ:
-  // - useState, useEffect, useRef, handleStorageChange, handleCartUpdated
-  // - Toàn bộ logic `localStorage.setItem` và `dispatchEvent`
-  // Lý do: `useCartStore` với middleware `persist` đã tự động làm hết việc này.
+  // 3. Wrap addToCart with useCallback to prevent recreation
+  const addToCart = useCallback(
+    (item: CartItem): boolean => {
+      if (!isAuthenticated) {
+        toast.warning('Yêu cầu đăng nhập', {
+          description: 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng',
+          duration: 4000,
+        });
+        return false;
+      }
 
-  // 4. Wrap lại `addToCart` với logic check auth
-  const addToCart = (item: CartItem): boolean => {
-    if (!isAuthenticated) {
-      notification.warning({
-        message: 'Yêu cầu đăng nhập',
-        description: 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng',
-        duration: 4,
-      });
-      return false;
-    }
+      // Validate/normalize (nếu cần)
+      const normalizedItem: CartItem = {
+        productId: item.productId || 0,
+        name: item.name || 'Unnamed Product',
+        thumbnailUrl: item.thumbnailUrl || '/placeholder.svg',
+        price: item.price || 0,
+        originalPrice: item.originalPrice || 0,
+        quantity: item.quantity || 1,
+      };
 
-    // Validate/normalize (nếu cần)
-    const normalizedItem: CartItem = {
-      productId: item.productId || 0,
-      name: item.name || 'Unnamed Product',
-      thumbnailUrl: item.thumbnailUrl || '/placeholder.svg',
-      price: item.price || 0,
-      originalPrice: item.originalPrice || 0,
-      quantity: item.quantity || 1,
-    };
+      storeAddToCart(normalizedItem); // Gọi action của store
+      return true;
+    },
+    [isAuthenticated, storeAddToCart],
+  );
 
-    storeAddToCart(normalizedItem); // Gọi action của store
-    return true;
-  };
-
-  // 5. Giữ lại các hàm tính toán (derived state)
-  const getTotalItems = () => {
+  // 5. Use useMemo for derived state to prevent recalculation
+  const getTotalItems = useCallback(() => {
     return cartItems.length;
-  };
+  }, [cartItems]);
 
-  const getTotalPrice = () => {
+  const getTotalPrice = useCallback(() => {
     return cartItems.reduce((total: number, item: CartItem) => {
       const price = item.price || 0;
       const quantity = item.quantity || 1;
       return total + price * quantity;
     }, 0);
-  };
+  }, [cartItems]);
 
   // 6. Giữ lại logic API (không liên quan state)
-  const validateCart = async (selectedCartItems: CartItem[]) => {
+  const validateCart = useCallback(async (selectedCartItems: CartItem[]) => {
     return await Request.post<CartValidateResponse>(
       API_ENDPOINTS.VALIDATE_CART,
       selectedCartItems,
     );
-  };
+  }, []);
 
-  // 7. Vấn đề `removeItemsFromCart`:
-  //    Logic này CÓ trong hook cũ nhưng KHÔNG CÓ trong Redux slice.
-  //    Bạn cần thêm action này vào `useCartStore.ts` để nó hoạt động.
-  /*
-    // Thêm vào useCartStore.ts:
-    removeItemsFromCart: (itemsToRemove) => set((state) => {
-      const itemsToRemoveMap = new Map(
-        itemsToRemove.map(item => [item.productId, item.quantity])
-      );
-      state.items = state.items.filter(item => {
-         // ... (logic y hệt trong hook cũ) ...
-      });
-    }),
-  */
-  // Giả sử đã thêm vào store:
-  const removeItemsFromCart = useCartStore(
-    (state) => state.removeItemsFromCart,
-  );
-
-  // 8. Trả về
+  // 8. Return stable references
   return {
     cartItems,
-    addToCart, // <-- hàm wrapper đã check auth
-    updateQuantity, // <-- từ store
-    removeFromCart, // <-- từ store
-    clearCart, // <-- từ store
-    removeItemsFromCart, // <-- từ store (sau khi bạn thêm vào)
+    addToCart,
+    updateQuantity,
+    removeFromCart,
+    clearCart,
+    removeItemsFromCart: removeFromCart,
     getTotalItems,
     getTotalPrice,
     isAuthenticated,

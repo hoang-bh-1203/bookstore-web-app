@@ -123,3 +123,12 @@ export const useCartStore = create<CartState & CartActions>()(
     },
   ),
 );
+
+export const {
+  addToCart,
+  removeFromCart,
+  updateQuantity,
+  clearCart,
+  setRecentOrder,
+  clearRecentOrder,
+} = useCartStore.getState();

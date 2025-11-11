@@ -1,62 +1,47 @@
-import { useEffect } from 'react';
-import { useNavigate, useNavigation } from 'react-router';
-import {
-  useAuthStore,
-  selectUser,
-  selectIsAuthenticated,
-  selectIsAdmin,
-  selectError,
-  selectIsLoading,
-} from '@/stores/useAuthStore';
+import { useCallback } from 'react';
+import { useNavigate } from 'react-router';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 /**
  * Custom hook for authentication management
  * Provides auth state and actions for login, logout, and auth checking
  */
 export const useAuth = () => {
-  // Get state from store using selectors
-  const user = useAuthStore(selectUser);
-  const isAuthenticated = useAuthStore(selectIsAuthenticated);
-  const isAdmin = useAuthStore(selectIsAdmin);
-  const error = useAuthStore(selectError);
-  const isLoading = useAuthStore(selectIsLoading);
-
-  // Get actions from store
+  // Use stable selectors - select primitive values and functions separately
+  const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
+  const error = useAuthStore((state) => state.error);
+  const isLoading = useAuthStore((state) => state.isLoading);
   const loginAction = useAuthStore((state) => state.login);
   const logoutAction = useAuthStore((state) => state.logout);
   const checkAuthAction = useAuthStore((state) => state.checkAuth);
   const clearErrorAction = useAuthStore((state) => state.clearError);
 
   const navigate = useNavigate();
-  const path = useNavigation();
 
-  // Automatically check authentication status on component mount
-  useEffect(() => {
-    const token = localStorage.getItem('authToken'); // Token is managed by persist middleware
-    if (!token && path.location?.pathname.includes('admin')) {
-      navigate('/admin/login');
-    }
+  // Compute derived values
+  const isAuthenticated = !!token;
+  const isAdmin = user?.role === 'ADMIN';
 
-    if (!user) {
-      checkAuthAction(); // Call action directly to verify authentication
-    }
-  }, [checkAuthAction, user, navigate, path.location?.pathname]);
+  const handleLogin = useCallback(
+    async (email: string, password: string) => {
+      await loginAction({ email, password });
+      // After await, we can check the error state in the store
+      // getState() retrieves the latest state outside of component render
+      const loginError = useAuthStore.getState().error;
+      return !loginError; // Returns true if no error (success)
+    },
+    [loginAction],
+  );
 
-  const handleLogin = async (email: string, password: string) => {
-    await loginAction({ email, password });
-    // After await, we can check the error state in the store
-    // getState() retrieves the latest state outside of component render
-    const loginError = useAuthStore.getState().error;
-    return !loginError; // Returns true if no error (success)
-  };
-
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logoutAction(); // Call logout action directly
-  };
+    navigate('/'); // Navigate to home after logout
+  }, [logoutAction, navigate]);
 
-  const clearAuthError = () => {
+  const clearAuthError = useCallback(() => {
     clearErrorAction(); // Call clear error action directly
-  };
+  }, [clearErrorAction]);
 
   return {
     user,
@@ -67,5 +52,6 @@ export const useAuth = () => {
     login: handleLogin,
     logout: handleLogout,
     clearError: clearAuthError,
+    checkAuth: checkAuthAction, // Expose for manual auth checking if needed
   };
 };
