@@ -20,11 +20,13 @@ import {
   ThumbsUp,
   ArrowDownNarrowWide,
   ArrowUpNarrowWide,
+  AlertCircle,
 } from 'lucide-react';
 import ProductCard from './product-card';
 import { Request } from '@/configs/api';
 import { API_ENDPOINTS } from '@/constants/endpoint';
 import { useLoading } from '@/hooks/useLoading';
+import { useApiHealth } from '@/hooks/useApiHealth';
 import type { Product, ProductSearchResponse } from '@/constants/interfaces';
 import { Star } from 'lucide-react'; // Use star icon for rating filter
 
@@ -39,8 +41,9 @@ const tabs = [
   { id: 'price', label: 'Giá' },
 ];
 
-const ProductGrid = forwardRef<ProductGridRef>((props, ref) => {
+const ProductGrid = forwardRef<ProductGridRef>((_, ref) => {
   const { showLoading, hideLoading } = useLoading();
+  const { isHealthy } = useApiHealth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -83,6 +86,12 @@ const ProductGrid = forwardRef<ProductGridRef>((props, ref) => {
     categoryId: number | null = null,
     currentFilters: typeof filters,
   ) => {
+    // Prevent fetching if API is not healthy
+    if (!isHealthy) {
+      console.warn('API is not healthy, skipping fetch');
+      return;
+    }
+
     try {
       setLoading(true);
       const params: any = {
@@ -209,13 +218,17 @@ const ProductGrid = forwardRef<ProductGridRef>((props, ref) => {
   };
 
   useEffect(() => {
+    // Only fetch if API is healthy
+    if (!isHealthy) {
+      return;
+    }
     resetPagination();
     fetchProducts(0, sort, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isHealthy]);
 
   const loadMore = () => {
-    if (loading || !hasMore || isResettingRef.current) return;
+    if (loading || !hasMore || isResettingRef.current || !isHealthy) return;
     const nextPage = currentPageRef.current + 1;
     setCurrentPage(nextPage);
     currentPageRef.current = nextPage;
@@ -231,7 +244,8 @@ const ProductGrid = forwardRef<ProductGridRef>((props, ref) => {
           entries[0].isIntersecting &&
           hasMore &&
           !loading &&
-          !isResettingRef.current
+          !isResettingRef.current &&
+          isHealthy
         ) {
           loadMore();
         }
@@ -240,7 +254,26 @@ const ProductGrid = forwardRef<ProductGridRef>((props, ref) => {
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [hasMore, loading]);
+  }, [hasMore, loading, isHealthy]);
+
+  // Show error message if API is not healthy
+  if (!isHealthy && products.length === 0) {
+    return (
+      <div className="bg-[#F5F5FA]">
+        <div className="p-4 lg:p-6 bg-white rounded-lg shadow-sm border border-red-200">
+          <div className="flex items-center gap-3 text-red-600">
+            <AlertCircle className="w-6 h-6 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold">Không thể kết nối đến máy chủ</h3>
+              <p className="text-sm text-red-500 mt-1">
+                Vui lòng kiểm tra lại kết nối hoặc thử lại sau vài phút
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#F5F5FA]">
@@ -259,6 +292,7 @@ const ProductGrid = forwardRef<ProductGridRef>((props, ref) => {
               onCheckedChange={(checked) =>
                 handleFilterChange('hasTikiNow', checked as boolean)
               }
+              disabled={!isHealthy}
             />
             <Label
               htmlFor="tikiNow"
@@ -276,6 +310,7 @@ const ProductGrid = forwardRef<ProductGridRef>((props, ref) => {
               onCheckedChange={(checked) =>
                 handleFilterChange('isTopDeal', checked as boolean)
               }
+              disabled={!isHealthy}
             />
             <Label
               htmlFor="topDeal"
@@ -294,6 +329,7 @@ const ProductGrid = forwardRef<ProductGridRef>((props, ref) => {
               onCheckedChange={(checked) =>
                 handleFilterChange('isFreeshipXtra', checked as boolean)
               }
+              disabled={!isHealthy}
             />
             <Label
               htmlFor="freeship"
@@ -311,6 +347,7 @@ const ProductGrid = forwardRef<ProductGridRef>((props, ref) => {
               onCheckedChange={(checked) =>
                 handleFilterChange('minRating', checked ? 4 : 0)
               }
+              disabled={!isHealthy}
             />
             <Label
               htmlFor="rating"
@@ -337,11 +374,12 @@ const ProductGrid = forwardRef<ProductGridRef>((props, ref) => {
               <button
                 key={tab.id}
                 onClick={() => handleTabClick(tab.id)}
+                disabled={!isHealthy}
                 className={`flex-1 py-3 px-2 text-sm font-medium text-center transition-colors ${
                   activeTab === tab.id
                     ? 'text-primary border-b-2 border-primary'
                     : 'text-muted-foreground'
-                }`}
+                } ${!isHealthy ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <div className="flex items-center justify-center gap-1">
                   {tab.label}
@@ -368,7 +406,8 @@ const ProductGrid = forwardRef<ProductGridRef>((props, ref) => {
               onClick={() =>
                 handleFilterChange('hasTikiNow', !filters.hasTikiNow)
               }
-              className={`px-2 py-1 rounded-full text-xs font-bold border ${filters.hasTikiNow ? 'bg-red-50 border-red-500 text-red-500' : 'bg-gray-50 border-gray-200 text-gray-500'}`}
+              disabled={!isHealthy}
+              className={`px-2 py-1 rounded-full text-xs font-bold border ${filters.hasTikiNow ? 'bg-red-50 border-red-500 text-red-500' : 'bg-gray-50 border-gray-200 text-gray-500'} ${!isHealthy ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               NOW
             </button>
@@ -382,8 +421,9 @@ const ProductGrid = forwardRef<ProductGridRef>((props, ref) => {
           <Select
             value={sort}
             onValueChange={(val: any) => handleSortChange(val)}
+            disabled={!isHealthy}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px]" disabled={!isHealthy}>
               <SelectValue placeholder="Sắp xếp theo" />
             </SelectTrigger>
             <SelectContent>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { FeaturedCollectionData } from '@/constants/interfaces';
 import { useBook } from '@/hooks/useBook.ts';
-// import { useLoading } from "@/hooks/useLoading.ts"; // Shadcn carousel usually doesn't need global loading for slides
+import { useApiHealth } from '@/hooks/useApiHealth.ts';
 import {
   Carousel,
   CarouselContent,
@@ -17,11 +17,16 @@ import { Badge } from '@/components/ui/badge';
 
 const FeaturedCollections: React.FC = () => {
   const navigate = useNavigate();
-  // const { showLoading, hideLoading } = useLoading();
   const { getBookFeaturedCollections } = useBook();
+  const { isHealthy } = useApiHealth();
   const [allCards, setAllCards] = useState<FeaturedCollectionData[]>([]);
 
   useEffect(() => {
+    // Only fetch if API is healthy
+    if (!isHealthy) {
+      return;
+    }
+
     const fetchCollections = async () => {
       try {
         const response = await getBookFeaturedCollections();
@@ -32,16 +37,15 @@ const FeaturedCollections: React.FC = () => {
       }
     };
     fetchCollections();
-  }, []);
+  }, [isHealthy, getBookFeaturedCollections]);
 
   const handleProductClick = (productId: number) => {
-    // showLoading("Đang chuyển hướng...");
     navigate(`/books/${productId}`);
-    // hideLoading();
   };
 
-  if (allCards.length === 0) {
-    return null; // Or a skeleton/placeholder if desired
+  // Show nothing if API is not healthy (no error message for featured collections)
+  if (!isHealthy || allCards.length === 0) {
+    return null;
   }
 
   // Group cards into pairs for the carousel slide (2 items per slide as per original design)
