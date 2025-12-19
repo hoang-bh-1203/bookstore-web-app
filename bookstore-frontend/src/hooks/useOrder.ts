@@ -7,35 +7,42 @@ import type {
   OrderCreate,
 } from '@/constants/interfaces';
 import { useCartStore } from '@/stores/useCartStore';
+import { useCallback } from 'react';
 
 export const useOrder = () => {
   // 2. Lấy action 'setRecentOrder' trực tiếp từ store
   // Hook này sẽ subscribe vào action, an toàn về hiệu suất
   const setRecentOrder = useCartStore((state) => state.setRecentOrder);
 
-  const getAllOrders = async () => {
+  const getAllOrders = useCallback(async () => {
     const response = await Request.get<Order[]>(API_ENDPOINTS.ORDERS);
     return response;
-  };
+  }, []);
 
-  const updateOrder = async (id: number, orderData: Partial<Order>) => {
-    const response = await Request.put<Order>(
-      API_ENDPOINTS.ORDER_BY_ID(id),
-      orderData,
-    );
-    return response;
-  };
+  const updateOrder = useCallback(
+    async (id: number, orderData: Partial<Order>) => {
+      const response = await Request.put<Order>(
+        API_ENDPOINTS.ORDER_BY_ID(id),
+        orderData,
+      );
+      return response;
+    },
+    [],
+  );
 
-  const createOrders = async (ordersData: Partial<OrderCreate[]>) => {
-    const response = await Request.post<CreateOrderResponse>(
-      API_ENDPOINTS.ORDERS_CREATE,
-      ordersData,
-    );
+  const createOrders = useCallback(
+    async (ordersData: Partial<OrderCreate[]>) => {
+      const response = await Request.post<CreateOrderResponse>(
+        API_ENDPOINTS.ORDERS_CREATE,
+        ordersData,
+      );
 
-    // 3. Gọi action trực tiếp, không cần dispatch
-    setRecentOrder(response);
-    return response;
-  };
+      // 3. Gọi action trực tiếp, không cần dispatch
+      setRecentOrder(response);
+      return response;
+    },
+    [],
+  );
 
   return { getAllOrders, updateOrder, createOrders };
 };

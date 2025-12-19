@@ -1,7 +1,7 @@
 import Request from '@/configs/api';
 import { API_ENDPOINTS } from '@/constants/endpoint';
 import type { Book } from '@/constants/interfaces';
-import { useRef } from 'react';
+import { useRef, useCallback } from 'react';
 
 /**
  * Global cache to persist book data across component re-renders
@@ -16,11 +16,11 @@ const globalBookCache = new Map<number, Book>();
 export const useBook = () => {
   const bookCache = useRef<Map<number, Book>>(globalBookCache);
 
-  const getAllBooks = async () => {
+  const getAllBooks = useCallback(async () => {
     return await Request.get<Book[]>(API_ENDPOINTS.BOOKS);
-  };
+  }, []);
 
-  const getTopSellingBooks = async () => {
+  const getTopSellingBooks = useCallback(async () => {
     const response = await Request.get<Book[]>(API_ENDPOINTS.BOOKS, {
       params: {
         _limit: 10,
@@ -31,9 +31,9 @@ export const useBook = () => {
     return response
       .filter((book) => book.quantitySold !== undefined)
       .slice(0, 10);
-  };
+  }, []);
 
-  const getBookById = async (id: number) => {
+  const getBookById = useCallback(async (id: number) => {
     // Return cached book if available
     if (bookCache.current.has(id)) {
       return bookCache.current.get(id)!;
@@ -46,41 +46,46 @@ export const useBook = () => {
     bookCache.current.set(id, book);
 
     return book;
-  };
+  }, []);
 
-  const createBook = async (bookData: Partial<Book>) => {
+  const createBook = useCallback(async (bookData: Partial<Book>) => {
     const book = await Request.post<Book>(API_ENDPOINTS.BOOKS, bookData);
     // Clear entire cache since book list has changed
     bookCache.current.clear();
     return book;
-  };
+  }, []);
 
-  const updateBook = async (id: number, bookData: Partial<Book>) => {
-    const book = await Request.put<Book>(
-      API_ENDPOINTS.BOOK_BY_ID(id),
-      bookData,
-    );
-    // Update cached book with new data
-    bookCache.current.set(id, book);
-    return book;
-  };
+  const updateBook = useCallback(
+    async (id: number, bookData: Partial<Book>) => {
+      const book = await Request.put<Book>(
+        API_ENDPOINTS.BOOK_BY_ID(id),
+        bookData,
+      );
+      // Update cached book with new data
+      bookCache.current.set(id, book);
+      return book;
+    },
+    [],
+  );
 
-  const deleteBook = async (id: number) => {
+  const deleteBook = useCallback(async (id: number) => {
     await Request.delete(API_ENDPOINTS.BOOK_BY_ID(id));
     // Remove deleted book from cache
     bookCache.current.delete(id);
-  };
+  }, []);
 
-  const getBookFeaturedCollections = () =>
-    Request.get<any>(API_ENDPOINTS.GET_BOOK_FEATURED_COLLECTIONS);
+  const getBookFeaturedCollections = useCallback(
+    () => Request.get<any>(API_ENDPOINTS.GET_BOOK_FEATURED_COLLECTIONS),
+    [],
+  );
 
   /**
    * Manually clears the entire book cache
    * Useful for forcing data refresh
    */
-  const clearCache = () => {
+  const clearCache = useCallback(() => {
     bookCache.current.clear();
-  };
+  }, []);
 
   return {
     getAllBooks,

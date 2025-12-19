@@ -34,7 +34,7 @@ export const checkApiHealth = async (): Promise<boolean> => {
 
   try {
     const baseURL =
-      import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api';
     const healthEndpoint = `${baseURL}/health`;
 
     const response = await fetch(healthEndpoint, {
@@ -54,7 +54,7 @@ export const checkApiHealth = async (): Promise<boolean> => {
     // If health endpoint doesn't exist, try to reach the API with a simple request
     try {
       const baseURL =
-        import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+        import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api';
       const testEndpoint = `${baseURL}/categories`;
 
       const response = await fetch(testEndpoint, {
