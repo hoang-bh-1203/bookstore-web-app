@@ -1,6 +1,6 @@
 // layouts/user/Header.tsx
 
-import logo from '@/assets/logo.svg';
+import logo from '@/assets/logo.png';
 import commitment from '@/assets/commitment.svg';
 import ticket from '@/assets/ticket.svg';
 import fastDelivery from '@/assets/fast-shipping.svg';

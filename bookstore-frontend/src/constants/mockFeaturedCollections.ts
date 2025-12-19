@@ -33,7 +33,7 @@ export const mockFeaturedCollections: CardData[] = [
     logo: 'src/assets/refund.svg',
     title: 'Top Sách Bán Chạy',
     sponsor: 'Tài trợ bởi',
-    brand: '1980 Books Tại Tiki Trading',
+    brand: '1980 Books Tại BS Trading',
     ratingText: '5/5',
     books: [
       { id: 1, image: 'src/assets/refund.svg', title: 'Sách 1' },
@@ -46,7 +46,7 @@ export const mockFeaturedCollections: CardData[] = [
     logo: 'src/assets/refund.svg',
     title: 'Bộ Sưu Tập Sách Mới Giảm Đến',
     sponsor: 'Tài trợ bởi',
-    brand: '1980 Books Tại Tiki Trading',
+    brand: '1980 Books Tại BS Trading',
     ratingText: '4.5/5',
     books: [
       {
@@ -74,7 +74,7 @@ export const mockFeaturedCollections: CardData[] = [
     logo: 'src/assets/refund.svg',
     title: 'Sách Kinh Doanh Hot',
     sponsor: 'Tài trợ bởi',
-    brand: '1980 Books Tại Tiki Trading',
+    brand: '1980 Books Tại BS Trading',
     ratingText: '4/5',
     books: [
       { id: 7, image: 'src/assets/refund.svg', title: 'Sách 7' },
@@ -87,7 +87,7 @@ export const mockFeaturedCollections: CardData[] = [
     logo: 'src/assets/refund.svg',
     title: 'Combo Sách Thiếu Nhi',
     sponsor: 'Tài trợ bởi',
-    brand: '1980 Books Tại Tiki Trading',
+    brand: '1980 Books Tại BS Trading',
     ratingText: '4.8/5',
     books: [
       {

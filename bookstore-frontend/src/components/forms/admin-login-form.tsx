@@ -1,5 +1,3 @@
-// components/forms/AdminLoginForm.tsx
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,7 +23,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { User, Lock, AlertTriangle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import logo from '@/assets/logo.svg';
+import logo from '@/assets/logo.png';
 
 // 1. Define validation schema with Zod
 const formSchema = z.object({

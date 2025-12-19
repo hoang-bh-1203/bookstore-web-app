@@ -1,5 +1,3 @@
-// components/Sidebar.tsx
-
 import { useEffect, useState } from 'react';
 import {
   Accordion,

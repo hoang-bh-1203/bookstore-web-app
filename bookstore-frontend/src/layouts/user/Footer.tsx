@@ -60,30 +60,31 @@ export default function Footer() {
               <div className="mt-4 space-y-1">
                 <div>
                   Hỗ trợ khách hàng:{' '}
-                  <span className="text-primary">hotro@tiki.vn</span>
+                  <span className="text-primary">hotro@bs.vn</span>
                 </div>
                 <div>
                   Báo lỗi bảo mật:{' '}
-                  <span className="text-primary">security@tiki.vn</span>
+                  <span className="text-primary">security@bs.vn</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* About Tiki */}
           <div className="lg:col-span-1">
-            <h3 className="font-semibold text-foreground mb-4">Về Tiki</h3>
+            <h3 className="font-semibold text-foreground mb-4">
+              Về BS Bookstore
+            </h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               {[
-                'Giới thiệu Tiki',
-                'Tiki Blog',
+                'Giới thiệu BS Bookstore',
+                'BS Blog',
                 'Tuyển dụng',
                 'Chính sách bảo mật thanh toán',
                 'Chính sách bảo mật thông tin cá nhân',
                 'Chính sách giải quyết khiếu nại',
                 'Điều khoản sử dụng',
-                'Giới thiệu Tiki Xu',
-                'Tiếp thị liên kết cùng Tiki',
+                'Giới thiệu BS Xu',
+                'Tiếp thị liên kết cùng BS',
                 'Bán hàng doanh nghiệp',
                 'Điều kiện vận chuyển',
               ].map((item, index) => (
@@ -109,7 +110,7 @@ export default function Footer() {
               </li>
               <li>
                 <a href="#" className="hover:text-primary transition-colors">
-                  Bán hàng cùng Tiki
+                  Bán hàng cùng BS
                 </a>
               </li>
             </ul>
@@ -155,7 +156,7 @@ export default function Footer() {
             <h4 className="font-semibold text-foreground mb-3">
               Dịch vụ giao hàng
             </h4>
-            <div className="text-primary font-bold text-lg">TIKINOW</div>
+            <div className="text-primary font-bold text-lg">BSNOW</div>
           </div>
 
           {/* Connect with us */}
