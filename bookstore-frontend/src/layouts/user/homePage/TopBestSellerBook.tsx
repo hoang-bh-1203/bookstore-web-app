@@ -29,7 +29,7 @@ export default function TopBestSellerBook() {
     <Card className="my-2">
       <CardHeader>
         <CardTitle className="text-xl">
-          Top Bán Chạy Sản Phẩm Nhà Sách Tiki
+          Top Bán Chạy Sản Phẩm Nhà Sách BS
         </CardTitle>
       </CardHeader>
       <CardContent>

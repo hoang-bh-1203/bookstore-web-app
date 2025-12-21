@@ -6,7 +6,7 @@ export default function VoucherSection() {
     <div className="flex flex-col gap-4 bg-background rounded-lg p-4 border shadow-sm">
       {/* Tiêu đề */}
       <div className="flex justify-between items-center">
-        <span className="font-medium">Tiki Khuyến Mãi</span>
+        <span className="font-medium">BS Khuyến Mãi</span>
         <span className="text-muted-foreground text-sm flex items-center gap-1">
           Có thể chọn 2
           <Info className="h-4 w-4" />

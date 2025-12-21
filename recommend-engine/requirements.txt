@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+py_vncorenlp
+transformers
+torch
+qdrant-client
+pandas
+dotenv
+mysql-connector-python
+apscheduler

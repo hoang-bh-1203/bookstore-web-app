@@ -36,7 +36,7 @@ export default function BookDetail() {
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Trang chủ', href: '/' },
-      { title: 'Nhà sách tiki', href: '/' },
+      { title: 'Nhà sách BS', href: '/' },
       { title: book?.name || 'Chi tiết sách', href: `/books/${book?.id}` },
     ],
     [book],

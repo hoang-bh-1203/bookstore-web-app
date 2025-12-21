@@ -36,8 +36,7 @@ const PaymentFooter: React.FC = () => {
         {/* Copyright */}
         <div className="pt-4 border-t">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} - Bản quyền của Công Ty Cổ Phần TIKI -
-            Tiki.vn
+            © {new Date().getFullYear()} - Bản quyền của Công Ty Cổ Phần BS
           </p>
         </div>
       </div>

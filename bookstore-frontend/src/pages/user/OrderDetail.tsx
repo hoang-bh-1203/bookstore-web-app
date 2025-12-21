@@ -161,7 +161,7 @@ const OrderDetail = () => {
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
                             Cung cấp bởi{' '}
-                            <span className="text-primary">Tiki Trading</span>
+                            <span className="text-primary">BS Trading</span>
                           </p>
                           <Button
                             variant="outline"

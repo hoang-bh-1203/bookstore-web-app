@@ -75,7 +75,7 @@ const offers = [
   },
   {
     title: 'Freeship',
-    subtitle: 'TikiCARD',
+    subtitle: 'BS Card',
     condition: '',
     brandLogo: 'src/assets/tiki-card.svg',
   },

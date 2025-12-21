@@ -151,7 +151,7 @@ export function LoginModal() {
                 className="w-40 h-40 object-contain mb-6"
               />
               <h4 className="text-primary font-medium text-lg text-center">
-                Mua sắm tại Tiki
+                Mua sắm tại BS
               </h4>
               <p className="text-primary/80 text-sm text-center mt-1">
                 Siêu ưu đãi mỗi ngày

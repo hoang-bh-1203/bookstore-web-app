@@ -90,7 +90,7 @@ export function SignupModal() {
                 Tạo tài khoản mới
               </h4>
               <p className="mt-2 text-sm text-muted-foreground">
-                Nhập thông tin để tạo tài khoản Tiki
+                Nhập thông tin để tạo tài khoản BS Bookstore
               </p>
 
               <form onSubmit={handleRegister} className="mt-8 flex-1">
@@ -187,7 +187,7 @@ export function SignupModal() {
                 className="w-40 h-40 object-contain mb-6"
               />
               <h4 className="text-primary font-medium text-lg text-center">
-                Chào mừng đến Tiki
+                Chào mừng đến Nhà sách BS
               </h4>
               <p className="text-primary/80 text-sm text-center mt-1">
                 Khám phá thế giới mua sắm

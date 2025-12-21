@@ -7,7 +7,7 @@ import RelatedSearches from '@/layouts/user/homePage/RelatedSearches.tsx';
 import { useRef } from 'react';
 import CustomBreadcrumb from '@/components/common/breadcrumb';
 
-const breadcrumbItems = [{ title: 'Trang chủ' }, { title: 'Nhà sách tiki' }];
+const breadcrumbItems = [{ title: 'Trang chủ' }, { title: 'Nhà sách BS' }];
 
 const HomePage = () => {
   const productGridRef = useRef<{
@@ -29,7 +29,7 @@ const HomePage = () => {
           <div className="flex-1 w-full min-w-0 space-y-6">
             <div className="bg-white rounded-lg p-4 shadow-sm border lg:block hidden">
               <h1 className="text-2xl font-semibold text-foreground">
-                Nhà Sách Tiki
+                Nhà Sách BS
               </h1>
             </div>
             <FeaturedCollections />

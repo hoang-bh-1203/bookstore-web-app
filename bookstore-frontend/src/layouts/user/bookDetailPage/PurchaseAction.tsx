@@ -74,7 +74,7 @@ export default function PurchaseActions({ book }: PurchaseActionsProps) {
             style={{ width: 40, height: 40 }}
           />
           <div>
-            <div className="font-medium">Tiki Trading</div>
+            <div className="font-medium">BS Trading</div>
             <img
               src="/src/assets/offical.svg"
               alt="ai"
