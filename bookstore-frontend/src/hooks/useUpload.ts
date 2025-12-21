@@ -1,13 +1,12 @@
 import Request from '@/configs/api';
 import { API_ENDPOINTS } from '@/constants/endpoint';
 import type { ImageUploadResponse } from '@/constants/interfaces';
-import type { RcFile } from 'antd/es/upload';
 import { useCallback } from 'react';
 
 const useUpload = () => {
   const uploadImage = useCallback(async (file: File) => {
     const formData = new FormData();
-    formData.append('file', file as RcFile);
+    formData.append('file', file);
 
     return Request.post<ImageUploadResponse>(
       API_ENDPOINTS.UPLOAD_IMAGE,

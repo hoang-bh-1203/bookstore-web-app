@@ -63,6 +63,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           );
           // Success: update user and token (fulfilled state)
           set({ user: response.user, token: response.token });
+          localStorage.setItem('authToken', response.token);
+
+          await get().checkAuth();
           // Persist middleware automatically saves token to localStorage
         } catch (error: any) {
           // Error: set error message (rejected state)

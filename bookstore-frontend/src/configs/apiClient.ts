@@ -1,5 +1,4 @@
 import axios, { AxiosError } from 'axios';
-import { checkApiHealth, setApiHealthStatus } from '@/utils/healthCheck';
 
 /**
  * Create a configured Axios instance for API communication
@@ -34,14 +33,9 @@ apiClient.interceptors.request.use(
  */
 apiClient.interceptors.response.use(
   (response) => {
-    // Mark API as healthy on successful response
-    setApiHealthStatus(true);
     return response;
   },
   (error: AxiosError) => {
-    // Mark API as unhealthy on error
-    setApiHealthStatus(false);
-
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken');
       // TODO: Implement redirect to login page or show unauthorized modal
@@ -49,10 +43,5 @@ apiClient.interceptors.response.use(
     return Promise.reject(error.response?.data || {});
   },
 );
-
-// Perform periodic health checks
-setInterval(async () => {
-  await checkApiHealth();
-}, 30000); // Check every 30 seconds
 
 export default apiClient;

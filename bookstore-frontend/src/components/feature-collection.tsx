@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { FeaturedCollectionData } from '@/constants/interfaces';
 import { useBook } from '@/hooks/useBook.ts';
-import { useApiHealth } from '@/hooks/useApiHealth.ts';
 import {
   Carousel,
   CarouselContent,
@@ -18,15 +17,9 @@ import { Badge } from '@/components/ui/badge';
 const FeaturedCollections: React.FC = () => {
   const navigate = useNavigate();
   const { getBookFeaturedCollections } = useBook();
-  const { isHealthy } = useApiHealth();
   const [allCards, setAllCards] = useState<FeaturedCollectionData[]>([]);
 
   useEffect(() => {
-    // Only fetch if API is healthy
-    if (!isHealthy) {
-      return;
-    }
-
     const fetchCollections = async () => {
       try {
         const response = await getBookFeaturedCollections();
@@ -37,14 +30,14 @@ const FeaturedCollections: React.FC = () => {
       }
     };
     fetchCollections();
-  }, [isHealthy, getBookFeaturedCollections]);
+  }, [getBookFeaturedCollections]);
 
   const handleProductClick = (productId: number) => {
     navigate(`/books/${productId}`);
   };
 
   // Show nothing if API is not healthy (no error message for featured collections)
-  if (!isHealthy || allCards.length === 0) {
+  if (allCards.length === 0) {
     return null;
   }
 
