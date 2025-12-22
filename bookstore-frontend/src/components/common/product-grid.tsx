@@ -20,7 +20,6 @@ import {
   ThumbsUp,
   ArrowDownNarrowWide,
   ArrowUpNarrowWide,
-  AlertCircle,
 } from 'lucide-react';
 import ProductCard from './product-card';
 import { Request } from '@/configs/api';
@@ -243,27 +242,8 @@ const ProductGrid = forwardRef<ProductGridRef>((_, ref) => {
     return () => observer.disconnect();
   }, [hasMore, loading]);
 
-  // Show error message if API is not healthy
-  if (products.length === 0) {
-    return (
-      <div className="bg-[#F5F5FA]">
-        <div className="p-4 lg:p-6 bg-white rounded-lg shadow-sm border border-red-200">
-          <div className="flex items-center gap-3 text-red-600">
-            <AlertCircle className="w-6 h-6 flex-shrink-0" />
-            <div>
-              <h3 className="font-semibold">Không thể kết nối đến máy chủ</h3>
-              <p className="text-sm text-red-500 mt-1">
-                Vui lòng kiểm tra lại kết nối hoặc thử lại sau vài phút
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-[#F5F5FA]">
+    <div className="">
       {/* Filter and Sort Section */}
       <div className="p-1 lg:p-4 bg-white lg:rounded-lg shadow-sm border mb-4">
         <h2 className="text-lg font-bold text-gray-900 mb-4 hidden lg:block">
