@@ -16,6 +16,8 @@ export default function PaymentConfirmation() {
   const recentOrder = useCartStore((state) => state.recentOrder);
   const navigate = useNavigate();
 
+  console.log(recentOrder);
+
   const onNavigate = (url: string) => {
     clearRecentOrder();
     navigate(url);
@@ -55,11 +57,7 @@ export default function PaymentConfirmation() {
                         Yay, đặt hàng thành công!
                       </h2>
                       <p className="text-blue-100 text-lg">
-                        Chuẩn bị tiền mặt{' '}
-                        {Number(recentOrder.totalAmount).toLocaleString(
-                          'vi-VN',
-                        )}{' '}
-                        ₫
+                        Chuẩn bị tiền mặt {recentOrder.totalAmount} ₫
                       </p>
                     </div>
                   </div>
@@ -77,10 +75,7 @@ export default function PaymentConfirmation() {
                     <p className="text-foreground font-medium">Tổng cộng</p>
                     <div className="text-right">
                       <p className="text-xl font-bold text-foreground">
-                        {Number(recentOrder.totalAmount).toLocaleString(
-                          'vi-VN',
-                        )}{' '}
-                        ₫
+                        {recentOrder.totalAmount} ₫
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
                         (Đã bao gồm VAT nếu có)
