@@ -26,8 +26,7 @@ export default function SummaryToggle({ content }: SummaryToggleProps) {
               alt="ai"
               style={{ width: 20, height: 20 }}
             />
-            <span className="text-muted-foreground">Xem thêm</span>
-            <span className="font-medium">Tóm tắt nội dung sách</span>
+            <span className="">Tóm tắt nội dung sách</span>
           </div>
           {open ? (
             <ChevronDown className="h-4 w-4" />

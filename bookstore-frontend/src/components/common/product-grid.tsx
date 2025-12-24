@@ -45,6 +45,7 @@ const ProductGrid = forwardRef<ProductGridRef>((_, ref) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [isError, setIsError] = useState(false);
   const [, setCurrentPage] = useState(0);
   const [, setTotalElements] = useState(0);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
@@ -105,6 +106,8 @@ const ProductGrid = forwardRef<ProductGridRef>((_, ref) => {
         { params },
       );
 
+      setIsError(false);
+
       if (response && response.content) {
         let filteredProducts = response.content;
         // Client-side filters (demo logic kept from original)
@@ -125,6 +128,8 @@ const ProductGrid = forwardRef<ProductGridRef>((_, ref) => {
       }
     } catch (error) {
       console.error('Error fetching products:', error);
+      setIsError(true);
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
@@ -145,6 +150,7 @@ const ProductGrid = forwardRef<ProductGridRef>((_, ref) => {
   };
 
   const resetPagination = () => {
+    setIsError(false);
     isResettingRef.current = true;
     setCurrentPage(0);
     currentPageRef.current = 0;
@@ -243,11 +249,12 @@ const ProductGrid = forwardRef<ProductGridRef>((_, ref) => {
     return () => observer.disconnect();
   }, [hasMore, loading]);
 
-  // Show error message if API is not healthy
-  if (products.length === 0) {
+  if (isError && products.length === 0) {
     return (
-      <div className="bg-[#F5F5FA]">
-        <div className="p-4 lg:p-6 bg-white rounded-lg shadow-sm border border-red-200">
+      <div className=" w-full py-8">
+        {' '}
+        {/* Thêm w-full py-8 để đẹp hơn chút */}
+        <div className="p-4 lg:p-6 bg-white rounded-lg shadow-sm border border-red-200 mx-auto max-w-2xl">
           <div className="flex items-center gap-3 text-red-600">
             <AlertCircle className="w-6 h-6 flex-shrink-0" />
             <div>
@@ -256,6 +263,16 @@ const ProductGrid = forwardRef<ProductGridRef>((_, ref) => {
                 Vui lòng kiểm tra lại kết nối hoặc thử lại sau vài phút
               </p>
             </div>
+            {/* Nút thử lại (Optional) */}
+            <button
+              onClick={() => {
+                resetPagination();
+                fetchProducts(0, sort, false);
+              }}
+              className="ml-auto px-4 py-2 text-sm bg-red-50 text-red-600 hover:bg-red-100 rounded-md font-medium transition-colors"
+            >
+              Thử lại
+            </button>
           </div>
         </div>
       </div>
@@ -263,7 +280,7 @@ const ProductGrid = forwardRef<ProductGridRef>((_, ref) => {
   }
 
   return (
-    <div className="bg-[#F5F5FA]">
+    <div className="">
       {/* Filter and Sort Section */}
       <div className="p-1 lg:p-4 bg-white lg:rounded-lg shadow-sm border mb-4">
         <h2 className="text-lg font-bold text-gray-900 mb-4 hidden lg:block">

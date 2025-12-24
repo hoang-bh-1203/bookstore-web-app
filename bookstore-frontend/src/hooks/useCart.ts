@@ -72,7 +72,6 @@ export const useCart = () => {
     updateQuantity,
     removeFromCart,
     clearCart,
-    removeItemsFromCart: removeFromCart,
     getTotalItems,
     getTotalPrice,
     isAuthenticated,

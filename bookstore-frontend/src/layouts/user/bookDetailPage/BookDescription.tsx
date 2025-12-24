@@ -31,13 +31,15 @@ export default function BookDescription({ book }: BookDescriptionProps) {
         )}
       </div>
 
-      <Button
-        variant="outline"
-        onClick={() => setExpanded(!expanded)}
-        className="mt-2 w-full"
-      >
-        {expanded ? 'Thu gọn' : 'Xem thêm'}
-      </Button>
+      <div className="flex justify-center">
+        <Button
+          variant="outline"
+          onClick={() => setExpanded(!expanded)}
+          className="border-none shadow-none hover:bg-transparent hover:underline hover:cursor-pointer"
+        >
+          {expanded ? 'Thu gọn' : 'Xem thêm'}
+        </Button>
+      </div>
     </div>
   );
 }
