@@ -14,7 +14,8 @@ import type { User } from '@/constants/interfaces';
  */
 interface AuthState {
   user: User | null;
-  token: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   error: string | null;
   isLoading: boolean;
 }
@@ -25,6 +26,7 @@ interface AuthState {
 interface AuthActions {
   login: (credentials: { email: string; password: string }) => Promise<void>;
   checkAuth: () => Promise<void>;
+  refresh: () => Promise<string | null>;
   logout: () => void;
   clearError: () => void;
   setUser: (user: User) => void;
@@ -35,7 +37,8 @@ interface AuthActions {
  */
 const initialState: AuthState = {
   user: null,
-  token: null, // Will be hydrated from localStorage by persist middleware
+  accessToken: null, // Will be hydrated from localStorage by persist middleware
+  refreshToken: null,
   error: null,
   isLoading: true, // Start as true to trigger checkAuth on app initialization
 };
@@ -57,13 +60,16 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       login: async (credentials) => {
         set({ error: null }); // Clear any previous errors (pending state)
         try {
-          const response = await Request.post<{ user: User; token: string }>(
-            API_ENDPOINTS.LOGIN,
-            credentials,
-          );
+          const response = await Request.post<{
+            accessToken: string;
+            refreshToken: string;
+            role: string;
+          }>(API_ENDPOINTS.LOGIN, credentials);
           // Success: update user and token (fulfilled state)
-          set({ user: response.user, token: response.token });
-          localStorage.setItem('authToken', response.token);
+          set({
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+          });
 
           await get().checkAuth();
           // Persist middleware automatically saves token to localStorage
@@ -75,12 +81,41 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         }
       },
 
+      refresh: async () => {
+        const refreshToken = get().refreshToken;
+
+        if (!refreshToken) {
+          get().logout();
+          return null;
+        }
+
+        try {
+          const response = await Request.post<{
+            accessToken: string;
+            refreshToken: string;
+            role: string;
+          }>(API_ENDPOINTS.REFRESH_TOKEN, {
+            refreshToken,
+          });
+
+          set({
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+          });
+
+          return response.accessToken;
+        } catch (error) {
+          console.error('Refresh token failed', error);
+          get().logout();
+          return null;
+        }
+      },
+
       checkAuth: async () => {
         set({ isLoading: true }); // Start loading (pending state)
-        const token = get().token; // Get token from persisted state
 
-        if (!token) {
-          set({ ...initialState, isLoading: false, token: null }); // No token, skip authentication check
+        if (!get().accessToken) {
+          set({ ...initialState, isLoading: false });
           return;
         }
 
@@ -90,26 +125,24 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
           // Success: update user data (fulfilled state)
           set({ user, isLoading: false });
-          localStorage.setItem('user', JSON.stringify(user)); // Keep existing user storage logic
         } catch (error: any) {
-          // Error: clear auth state (rejected state)
-          set({ user: null, token: null, isLoading: false });
-          localStorage.removeItem('user');
-          console.error('Invalid token:', error);
+          get().logout();
+          set({ isLoading: false });
         }
       },
 
       logout: () => {
-        // Clear user data from localStorage
-        localStorage.removeItem('user');
-        set({ user: null, token: null, error: null });
+        set({ user: null, accessToken: null, error: null });
         // Persist middleware automatically removes token from localStorage
       },
     }),
     {
       name: 'auth-token-storage', // localStorage key name
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ token: state.token }), // Only persist the token field
+      partialize: (state) => ({
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
+      }),
     },
   ),
 );
@@ -119,7 +152,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
  * Can be used directly in components: const user = useAuthStore(selectUser)
  */
 export const selectUser = (state: AuthState) => state.user;
-export const selectIsAuthenticated = (state: AuthState) => !!state.token;
+export const selectIsAuthenticated = (state: AuthState) => !!state.accessToken;
 export const selectIsAdmin = (state: AuthState) =>
   state.user?.role === UserRole.ADMIN;
 export const selectError = (state: AuthState) => state.error;

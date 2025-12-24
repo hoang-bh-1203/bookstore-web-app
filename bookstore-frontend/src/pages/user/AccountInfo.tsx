@@ -85,7 +85,6 @@ const AccountInfo = () => {
 
       const response = await updateUser(userData.id, payload);
       if (response) {
-        localStorage.setItem('user', JSON.stringify(response));
         setUser(response);
         toast.success('Cập nhật thông tin thành công!');
       }

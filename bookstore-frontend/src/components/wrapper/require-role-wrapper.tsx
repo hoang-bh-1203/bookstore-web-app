@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 
 interface RequireRoleProps {
   children: JSX.Element;
-  role: 'ADMIN' | 'USER';
+  role: 'ROLE_ADMIN' | 'ROLE_USER';
 }
 
 const RequireRole = ({ children, role }: RequireRoleProps) => {

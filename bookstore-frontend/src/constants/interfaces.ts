@@ -1,15 +1,14 @@
 export interface User {
   id: number;
   email: string;
-  password: string;
   fullName: string;
-  phone: string;
   avatarUrl: string | null;
+  phone: string;
+  address: string;
+  isActive: boolean;
+  role: 'ROLE_ADMIN' | 'ROLE_USER';
   createdAt: string;
   updatedAt: string;
-  isActive: boolean;
-  address: string;
-  role: 'ADMIN' | 'USER';
 }
 
 export interface Author {
