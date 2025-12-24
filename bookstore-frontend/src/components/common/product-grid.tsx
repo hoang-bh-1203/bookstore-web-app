@@ -20,6 +20,7 @@ import {
   ThumbsUp,
   ArrowDownNarrowWide,
   ArrowUpNarrowWide,
+  AlertCircle,
 } from 'lucide-react';
 import ProductCard from './product-card';
 import { Request } from '@/configs/api';
@@ -44,6 +45,7 @@ const ProductGrid = forwardRef<ProductGridRef>((_, ref) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [isError, setIsError] = useState(false);
   const [, setCurrentPage] = useState(0);
   const [, setTotalElements] = useState(0);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
@@ -104,6 +106,8 @@ const ProductGrid = forwardRef<ProductGridRef>((_, ref) => {
         { params },
       );
 
+      setIsError(false);
+
       if (response && response.content) {
         let filteredProducts = response.content;
         // Client-side filters (demo logic kept from original)
@@ -124,6 +128,8 @@ const ProductGrid = forwardRef<ProductGridRef>((_, ref) => {
       }
     } catch (error) {
       console.error('Error fetching products:', error);
+      setIsError(true);
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
@@ -144,6 +150,7 @@ const ProductGrid = forwardRef<ProductGridRef>((_, ref) => {
   };
 
   const resetPagination = () => {
+    setIsError(false);
     isResettingRef.current = true;
     setCurrentPage(0);
     currentPageRef.current = 0;
@@ -241,6 +248,36 @@ const ProductGrid = forwardRef<ProductGridRef>((_, ref) => {
     observer.observe(el);
     return () => observer.disconnect();
   }, [hasMore, loading]);
+
+  if (isError && products.length === 0) {
+    return (
+      <div className=" w-full py-8">
+        {' '}
+        {/* Thêm w-full py-8 để đẹp hơn chút */}
+        <div className="p-4 lg:p-6 bg-white rounded-lg shadow-sm border border-red-200 mx-auto max-w-2xl">
+          <div className="flex items-center gap-3 text-red-600">
+            <AlertCircle className="w-6 h-6 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold">Không thể kết nối đến máy chủ</h3>
+              <p className="text-sm text-red-500 mt-1">
+                Vui lòng kiểm tra lại kết nối hoặc thử lại sau vài phút
+              </p>
+            </div>
+            {/* Nút thử lại (Optional) */}
+            <button
+              onClick={() => {
+                resetPagination();
+                fetchProducts(0, sort, false);
+              }}
+              className="ml-auto px-4 py-2 text-sm bg-red-50 text-red-600 hover:bg-red-100 rounded-md font-medium transition-colors"
+            >
+              Thử lại
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="">
