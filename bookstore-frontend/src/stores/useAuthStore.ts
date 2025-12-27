@@ -30,6 +30,7 @@ interface AuthActions {
   logout: () => void;
   clearError: () => void;
   setUser: (user: User) => void;
+  clearToken: () => void;
 }
 
 /**
@@ -126,14 +127,30 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           // Success: update user data (fulfilled state)
           set({ user, isLoading: false });
         } catch (error: any) {
-          get().logout();
           set({ isLoading: false });
         }
       },
 
-      logout: () => {
-        set({ user: null, accessToken: null, error: null });
+      logout: async () => {
+        const accessToken = get().accessToken;
+
+        await Request.post<{ message: string }>(API_ENDPOINTS.LOGOUT, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          error: null,
+          isLoading: false,
+        });
         // Persist middleware automatically removes token from localStorage
+      },
+
+      clearToken: async () => {
+        set({ accessToken: null, refreshToken: null, user: null });
       },
     }),
     {

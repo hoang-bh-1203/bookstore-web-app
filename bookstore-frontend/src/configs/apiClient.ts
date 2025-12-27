@@ -19,7 +19,11 @@ apiClient.interceptors.request.use(
   (config) => {
     const accessToken = useAuthStore.getState().accessToken;
 
-    if (accessToken) {
+    const isPublicEndpoint =
+      config.url?.includes('/auth/login') ||
+      config.url?.includes('/auth/refresh');
+
+    if (accessToken && !isPublicEndpoint) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
@@ -37,7 +41,7 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 500 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
@@ -45,6 +49,7 @@ apiClient.interceptors.response.use(
 
         if (newAccessToken) {
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          console.log(apiClient(originalRequest));
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
