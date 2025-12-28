@@ -35,18 +35,6 @@ import { toast } from 'sonner';
 
 const userColumns: CustomTableColumn<User>[] = [
   {
-    key: 'id',
-    title: 'ID',
-    dataIndex: 'id',
-    align: 'center',
-    render: (value) =>
-      isNilOrEmpty(value) ? (
-        <TableColumnNoData />
-      ) : (
-        <span className="font-medium">{value}</span>
-      ),
-  },
-  {
     key: 'fullName',
     title: 'Full Name',
     dataIndex: 'fullName',
@@ -106,10 +94,12 @@ const userColumns: CustomTableColumn<User>[] = [
         <TableColumnNoData />
       ) : (
         <Badge
-          variant={value === 'ADMIN' ? 'destructive' : 'default'}
-          className={value === 'USER' ? 'bg-blue-500 hover:bg-blue-600' : ''}
+          variant={value === 'ROLE_ADMIN' ? 'destructive' : 'default'}
+          className={
+            value === 'ROLE_USER' ? 'bg-blue-500 hover:bg-blue-600' : ''
+          }
         >
-          {value}
+          {value === 'ROLE_USER' ? 'User' : 'Admin'}
         </Badge>
       ),
   },
@@ -225,10 +215,13 @@ const UserManagementTable = () => {
     async (values: User) => {
       try {
         if (isEditing && editingUser) {
-          await updateUser(editingUser.id, {
-            ...values,
-            password: editingUser.password,
-          });
+          const { password, ...restValues } = values;
+
+          const updatePayload: Partial<User> = {
+            ...restValues,
+            ...(password ? { password } : {}),
+          };
+          await updateUser(editingUser.id, updatePayload as User);
           toast.success('Cập nhật thành công!');
         } else {
           await createUser(values);

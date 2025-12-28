@@ -38,7 +38,6 @@ export const useAuth = () => {
 
   const handleLogout = useCallback(() => {
     logoutAction(); // Call logout action directly
-    navigate('/'); // Navigate to home after logout
   }, [logoutAction, navigate]);
 
   const clearAuthError = useCallback(() => {

@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, User, Phone, Mail, Lock, Users } from 'lucide-react';
+import { Loader2, User, Phone, Mail, Lock, Users, MapPin } from 'lucide-react';
 import type { User as UserInterface } from '@/constants/interfaces';
 import ImageUpload from '../common/image-uploader';
 
@@ -34,7 +34,7 @@ interface CreateUserFormProps {
 }
 
 // 1. Define Zod schema
-const formSchema = z.object({
+const baseSchema = z.object({
   fullName: z
     .string()
     .min(2, 'Họ tên phải có ít nhất 2 ký tự.')
@@ -44,26 +44,24 @@ const formSchema = z.object({
     .regex(/^(0[3|5|7|8|9])+([0-9]{8})$/, 'Số điện thoại không hợp lệ.'),
   role: z.string({ required_error: 'Vui lòng chọn vai trò.' }),
   email: z.string().email('Email không hợp lệ.'),
-  password: z
-    .string()
-    .min(6, 'Mật khẩu phải có ít nhất 6 ký tự.')
-    .max(20, 'Mật khẩu không được vượt quá 20 ký tự.')
-    .optional(),
   avatarUrl: z.array(z.string()).optional().default([]),
+  address: z.string().optional(),
 });
 
 // 2. Schema động: Yêu cầu mật khẩu khi tạo mới
 const createUserSchema = (isUpdating: boolean) => {
   if (isUpdating) {
-    return formSchema; // Mật khẩu là tùy chọn khi cập nhật
+    return baseSchema.extend({
+      password: z.string().optional(),
+    });
   }
-  return formSchema.refine(
-    (data) => data.password && data.password.length > 0,
-    {
-      message: 'Vui lòng nhập mật khẩu!',
-      path: ['password'],
-    },
-  );
+
+  return baseSchema.extend({
+    password: z
+      .string()
+      .min(6, 'Mật khẩu phải có ít nhất 6 ký tự.')
+      .max(20, 'Mật khẩu không được vượt quá 20 ký tự.'),
+  });
 };
 
 export default function CreateUserForm({
@@ -76,7 +74,7 @@ export default function CreateUserForm({
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   // 3. Set up react-hook-form
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<z.infer<any>>({
     resolver: zodResolver(createUserSchema(isUpdating)) as any,
     defaultValues: {
       fullName: defaultValues?.fullName || '',
@@ -85,6 +83,7 @@ export default function CreateUserForm({
       email: defaultValues?.email || '',
       password: '', // Luôn trống
       avatarUrl: defaultValues?.avatarUrl ? [defaultValues.avatarUrl] : [],
+      address: defaultValues?.address || '',
     },
   });
 
@@ -98,11 +97,12 @@ export default function CreateUserForm({
         email: defaultValues.email || '',
         password: '',
         avatarUrl: defaultValues.avatarUrl ? [defaultValues.avatarUrl] : [],
+        address: defaultValues?.address || '',
       });
     }
   }, [defaultValues, form]);
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = (values: z.infer<any>) => {
     const finalValues = {
       ...values,
       avatarUrl: values.avatarUrl?.[0] || '', // Chỉ lấy ảnh đầu tiên
@@ -135,6 +135,57 @@ export default function CreateUserForm({
                     toggleUploading={setIsUploadingAvatar}
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Nhập email"
+                      {...field}
+                      className="pl-10 h-10"
+                      disabled={isUpdating}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="role"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Vai trò</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  disabled={isUpdating}
+                >
+                  <FormControl>
+                    <SelectTrigger className="h-10">
+                      <div className="flex items-center gap-3">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <SelectValue placeholder="Chọn vai trò" />
+                      </div>
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="ROLE_ADMIN">Admin</SelectItem>
+                    <SelectItem value="ROLE_USER">User</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -185,43 +236,15 @@ export default function CreateUserForm({
 
           <FormField
             control={form.control}
-            name="role"
+            name="address"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Vai trò</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger className="h-10">
-                      <div className="flex items-center gap-3">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <SelectValue placeholder="Chọn vai trò" />
-                      </div>
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="ADMIN">Admin</SelectItem>
-                    <SelectItem value="USER">User</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>Địa chỉ</FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Nhập email"
+                      placeholder="Nhập địa chỉ"
                       {...field}
                       className="pl-10 h-10"
                     />

@@ -26,7 +26,7 @@ const ImageUploader: React.FC<ImageUploadProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { uploadImage, deleteImage } = useUpload();
+  const { uploadImage } = useUpload();
 
   // Sync internal state with external value prop
   useEffect(() => {
@@ -90,7 +90,7 @@ const ImageUploader: React.FC<ImageUploadProps> = ({
     }
   };
 
-  const handleRemove = async (urlToRemove: string, index: number) => {
+  const handleRemove = async (_urlToRemove: string, index: number) => {
     try {
       // Optional: Call delete API if you have the ID.
       // Since we only have URL here in simplified state, you might need to adjust

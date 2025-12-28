@@ -29,7 +29,7 @@ export default function AdminHeader({ collapsed, onToggle }: AdminHeaderProps) {
   const userMenuItems = [
     {
       key: 'logout',
-      icon: <LogOut className="mr-2 h-4 w-4" />,
+      icon: <LogOut className="mr-2 h-4 w-4 text-destructive" />,
       label: 'Đăng xuất',
       danger: true,
     },
