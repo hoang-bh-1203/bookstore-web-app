@@ -6,7 +6,6 @@ import {
   Users,
   ShoppingCart,
   ScrollText,
-  User,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -68,11 +67,6 @@ export default function AdminSidebar({ collapsed }: AdminSidebarProps) {
           label: 'Danh sách đơn hàng',
         },
       ],
-    },
-    {
-      key: '/admin/profile',
-      icon: <User className="h-4 w-4" />,
-      label: 'Thông tin cá nhân',
     },
   ];
 
