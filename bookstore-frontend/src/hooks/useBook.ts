@@ -1,6 +1,10 @@
 import Request from '@/configs/api';
 import { API_ENDPOINTS } from '@/constants/endpoint';
-import type { Book } from '@/constants/interfaces';
+import type {
+  Book,
+  PageableParams,
+  PagedResponse,
+} from '@/constants/interfaces';
 import { useRef, useCallback } from 'react';
 
 /**
@@ -16,22 +20,26 @@ const globalBookCache = new Map<number, Book>();
 export const useBook = () => {
   const bookCache = useRef<Map<number, Book>>(globalBookCache);
 
-  const getAllBooks = useCallback(async () => {
-    return await Request.get<Book[]>(API_ENDPOINTS.BOOKS);
+  const getAllBooks = useCallback(async (params?: PageableParams) => {
+    const response = await Request.get<PagedResponse<Book>>(
+      API_ENDPOINTS.BOOKS,
+      { params },
+    );
+    return response;
   }, []);
 
-  const getTopSellingBooks = useCallback(async () => {
-    const response = await Request.get<Book[]>(API_ENDPOINTS.BOOKS, {
-      params: {
-        _limit: 10,
-        _sort: 'quantitySold',
-        _order: 'desc',
-      },
-    });
-    return response
-      .filter((book) => book.quantitySold !== undefined)
-      .slice(0, 10);
-  }, []);
+  // const getTopSellingBooks = useCallback(async () => {
+  //   const response = await Request.get<Book[]>(API_ENDPOINTS.BOOKS, {
+  //     params: {
+  //       _limit: 10,
+  //       _sort: 'quantitySold',
+  //       _order: 'desc',
+  //     },
+  //   });
+  //   return response
+  //     .filter((book) => book.quantitySold !== undefined)
+  //     .slice(0, 10);
+  // }, []);
 
   const getBookById = useCallback(async (id: number) => {
     // Return cached book if available
@@ -93,7 +101,7 @@ export const useBook = () => {
     createBook,
     updateBook,
     deleteBook,
-    getTopSellingBooks,
+    // getTopSellingBooks,
     getBookFeaturedCollections,
     clearCache,
   };

@@ -128,7 +128,7 @@ export default function CreateCategoryForm({
                     placeholder="Chọn danh mục cha"
                     valueKey="id"
                     labelKey="name"
-                    pageSize={10}
+                    pageSize={100}
                     key={
                       defaultValues?.id
                         ? `edit-${defaultValues.id}`
