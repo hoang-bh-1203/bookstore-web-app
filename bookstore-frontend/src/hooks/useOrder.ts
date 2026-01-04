@@ -3,8 +3,11 @@ import Request from '@/configs/api';
 import { API_ENDPOINTS } from '@/constants/endpoint';
 import type {
   CreateOrderResponse,
+  DashboardStats,
   Order,
   OrderCreate,
+  PageableParams,
+  PagedResponse,
 } from '@/constants/interfaces';
 import { useCartStore } from '@/stores/useCartStore';
 import { useCallback } from 'react';
@@ -14,8 +17,11 @@ export const useOrder = () => {
   // Hook này sẽ subscribe vào action, an toàn về hiệu suất
   const setRecentOrder = useCartStore((state) => state.setRecentOrder);
 
-  const getAllOrders = useCallback(async () => {
-    const response = await Request.get<Order[]>(API_ENDPOINTS.ORDERS);
+  const getAllOrders = useCallback(async (params?: PageableParams) => {
+    const response = await Request.get<PagedResponse<Order>>(
+      API_ENDPOINTS.ORDERS,
+      { params },
+    );
     return response;
   }, []);
 
@@ -44,5 +50,13 @@ export const useOrder = () => {
     [],
   );
 
-  return { getAllOrders, updateOrder, createOrders };
+  const getDashboardStats = useCallback(async () => {
+    // Gọi endpoint /api/v1/orders/stats
+    const response = await Request.get<DashboardStats>(
+      `${API_ENDPOINTS.ORDERS_STAT}`,
+    );
+    return response;
+  }, []);
+
+  return { getAllOrders, updateOrder, createOrders, getDashboardStats };
 };

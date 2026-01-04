@@ -97,23 +97,30 @@ export interface Book {
   images: BookImage[];
 }
 
-export interface Item {
+export interface OrderItem {
   id: number;
+  productId: number;
+  productName: string;
+  productPrice: number;
+  productDiscount: number;
   quantity: number;
-  name: string;
-  price: number;
-  thumbnail?: string;
+  total: number;
 }
 
 export interface Order {
   id: number;
+  customerId: number;
   customerName: string;
-  products: Item[];
-  totalPrice: number;
-  status: string;
-  createdAt?: string;
-  address?: string;
-  phone?: string;
+  customerEmail: string;
+  address: string;
+  status: 'PENDING' | 'CONFIRMED' | 'DELIVERED' | 'COMPLETED' | 'CANCELLED'; // Enum status
+  methodPayment: string;
+  paymentStatus: string;
+  totalAmount: number; // Backend trả về totalAmount, không phải totalPrice
+  totalItem: number;
+  items: OrderItem[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface OrderCreate {
@@ -183,6 +190,18 @@ export interface ProductItem {
   discountPercent: number;
 }
 
+export interface OrderStatusStat {
+  status: string;
+  count: number;
+}
+
+export interface DashboardStats {
+  totalOrders: number;
+  totalRevenue: number;
+  deliveringOrders: number;
+  statusBreakdown: OrderStatusStat[];
+}
+
 export interface FeaturedCollectionData {
   logo: string;
   title: string;
@@ -197,6 +216,7 @@ export interface PageableParams {
   size?: number;
   sort?: string;
   keyword?: string;
+  status?: string;
 }
 
 export interface CartItem {
