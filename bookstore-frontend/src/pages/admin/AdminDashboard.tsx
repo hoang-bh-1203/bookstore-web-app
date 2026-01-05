@@ -5,7 +5,6 @@ import {
   ShoppingCart,
   LayoutGrid,
   DollarSign,
-  TrendingUp,
   ShoppingBag,
 } from 'lucide-react';
 import {
@@ -106,15 +105,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Secondary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCardSecondary
-          title="Tăng trưởng tháng này"
-          value={statsData.monthlyGrowth.toFixed(1)}
-          suffix="%"
-          icon={TrendingUp}
-          iconColor="text-green-500"
-          valueColor="#10b981"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatCardSecondary
           title="Đơn hàng hôm nay"
           value={statsData.todayOrders}
@@ -224,7 +215,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Charts Row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Doanh thu theo tháng (VNĐ)</CardTitle>

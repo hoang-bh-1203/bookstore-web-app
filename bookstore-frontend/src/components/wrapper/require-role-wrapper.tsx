@@ -9,7 +9,7 @@ interface RequireRoleProps {
 }
 
 const RequireRole = ({ children, role }: RequireRoleProps) => {
-  const { isAuthenticated, user, isLoading } = useAuth();
+  const { user, refreshToken, isLoading } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -20,16 +20,12 @@ const RequireRole = ({ children, role }: RequireRoleProps) => {
     );
   }
 
-  if (!user || !isAuthenticated) {
+  if (!user && !refreshToken) {
     if (role === 'ROLE_ADMIN') {
       return <Navigate to="/admin/login" state={{ from: location }} replace />;
     } else {
       return <Navigate to="/" state={{ from: location }} replace />;
     }
-  }
-
-  if (user.role !== role) {
-    return <Navigate to="/403" replace />;
   }
 
   return children;

@@ -10,12 +10,14 @@ export const useAuth = () => {
   // Use stable selectors - select primitive values and functions separately
   const user = useAuthStore((state) => state.user);
   const accessToken = useAuthStore((state) => state.accessToken);
+  const refreshToken = useAuthStore((state) => state.refreshToken);
   const error = useAuthStore((state) => state.error);
   const isLoading = useAuthStore((state) => state.isLoading);
   const loginAction = useAuthStore((state) => state.login);
   const logoutAction = useAuthStore((state) => state.logout);
   const checkAuthAction = useAuthStore((state) => state.checkAuth);
   const clearErrorAction = useAuthStore((state) => state.clearError);
+  const clearToken = useAuthStore((state) => state.clearToken);
 
   const navigate = useNavigate();
 
@@ -45,6 +47,7 @@ export const useAuth = () => {
 
   return {
     user,
+    refreshToken,
     isAuthenticated,
     isAdmin,
     error,
@@ -53,5 +56,6 @@ export const useAuth = () => {
     logout: handleLogout,
     clearError: clearAuthError,
     checkAuth: checkAuthAction, // Expose for manual auth checking if needed
+    clearToken,
   };
 };

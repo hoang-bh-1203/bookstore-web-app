@@ -201,7 +201,6 @@ export interface StatsData {
   totalProducts: number;
   totalOrders: number;
   totalRevenue: number;
-  monthlyGrowth: number; // Percentage growth
   todayOrders: number;
 }
 

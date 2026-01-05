@@ -1,6 +1,7 @@
 export const API_ENDPOINTS = {
   // Authentication API endpoints
   LOGIN: '/auth/login',
+  LOGOUT: '/auth/logout',
   REFRESH_TOKEN: '/auth/refresh',
   REGISTER: '/auth/register',
   ME: '/auth/me',

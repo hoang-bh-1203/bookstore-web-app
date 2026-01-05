@@ -24,6 +24,7 @@ import { User, Lock, AlertTriangle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import logo from '@/assets/logo.png';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 // 1. Define validation schema with Zod
 const formSchema = z.object({
@@ -36,7 +37,7 @@ type LoginFormValues = z.infer<typeof formSchema>;
 export default function AdminLoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const { login, clearToken } = useAuth();
   const navigate = useNavigate();
 
   // 2. Set up react-hook-form
@@ -56,9 +57,14 @@ export default function AdminLoginForm() {
 
       const success = await login(values.email, values.password);
 
-      if (success) {
+      const currentUser = useAuthStore.getState().user;
+
+      if (success && currentUser?.role === 'ROLE_ADMIN') {
         navigate('/admin', { replace: true });
       } else {
+        if (success) {
+          clearToken();
+        }
         setError('Email hoặc mật khẩu không đúng');
       }
     } catch (err) {
