@@ -3,6 +3,7 @@ export interface User {
   email: string;
   fullName: string;
   avatarUrl: string | null;
+  password: string;
   phone: string;
   address: string;
   isActive: boolean;
