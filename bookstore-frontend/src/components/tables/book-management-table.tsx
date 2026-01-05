@@ -1,11 +1,15 @@
-// components/table/BookManagementTable.tsx
-
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AdminTable, {
   type CustomTableColumn,
 } from '@/components/common/custom-table';
-import type { Book, Category, ImageBook } from '@/constants/interfaces';
-import { useLoaderData, useRevalidator } from 'react-router-dom';
+import type {
+  Book,
+  BookImage,
+  Category,
+  PageableParams,
+  PagedResponse,
+} from '@/constants/interfaces';
+import { useLoaderData } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -21,37 +25,88 @@ import { useBook } from '@/hooks/useBook.ts';
 import ModalFormCreateBook from '../modals/modal-form-create-book';
 import { useCategory } from '@/hooks/useCategory.ts';
 import { toast } from 'sonner';
+import { debounce } from 'lodash';
 
 const BookManagementTable = () => {
-  const books = useLoaderData() as Book[];
+  // Giả sử loader trả về PagedResponse<Book> thay vì Book[]
+  const defaultBooks = useLoaderData() as PagedResponse<Book>;
+
+  // States cho Data & Pagination
+  const [books, setBooks] = useState<Book[]>(defaultBooks?.data || []);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    size: 10,
+    total: defaultBooks?.totalElements || 0,
+  });
+  const [loading, setLoading] = useState(false);
+  const [keyword, setKeyword] = useState('');
+  const [sorter, setSorter] = useState<{ field?: string; order?: string }>({});
+
+  // States cho Modal & Actions
   const [openModal, setOpenModal] = useState(false);
   const [openModalDelete, setOpenModalDelete] = useState(false);
   const [editingBook, setEditingBook] = useState<Book | undefined>(undefined);
   const [isEditing, setIsEditing] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [fieldSelected, setFieldSelected] = useState<string | undefined>(
-    undefined,
-  );
-  const [booksShowed, setBooksShowed] = useState(books);
-  const [order, setOrder] = useState<'asc' | 'desc' | undefined>(undefined);
-  const { createBook, deleteBook, updateBook } = useBook();
-  const revalidator = useRevalidator();
-  const { getAllCategories } = useCategory();
-  const [categoriesOption, setCategoriesOption] = useState<Category[]>([]);
-
   const userToDeleteRef = useRef<Book | null>(null);
 
+  // Hooks
+  const { createBook, deleteBook, updateBook, getAllBooks } = useBook(); // Đảm bảo useBook có getAllBooks
+  const { getAllCategories } = useCategory();
+
+  // State phụ trợ
+  const [_categoriesOption, setCategoriesOption] = useState<Category[]>([]);
+
+  // 1. Fetch Categories cho Select box hiển thị tên
   useEffect(() => {
     (async () => {
-      const data = await getAllCategories();
-      setCategoriesOption(data);
+      const data = await getAllCategories({ page: 0, size: 100 });
+      setCategoriesOption(data.data);
     })();
   }, [getAllCategories]);
 
+  // 2. Hàm Fetch Books từ API (Server-side)
+  const fetchBooks = useCallback(
+    async (params: PageableParams) => {
+      setLoading(true);
+      try {
+        const response = await getAllBooks({
+          ...params,
+          page: (params.page || 1) - 1,
+        });
+        setBooks(response.data);
+        setPagination((prev) => ({ ...prev, total: response.totalElements }));
+      } catch (error) {
+        console.error('Failed to fetch books:', error);
+        toast.error('Lấy danh sách sách thất bại');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [getAllBooks],
+  );
+
+  const debouncedFetchBooks = useMemo(
+    () => debounce(fetchBooks, 500),
+    [fetchBooks],
+  );
+
   useEffect(() => {
-    if (!books) return;
-    setBooksShowed(books);
-  }, [books]);
+    const params: PageableParams = {
+      page: pagination.page,
+      size: pagination.size,
+    };
+    if (sorter.field && sorter.order)
+      params.sort = `${sorter.field},${sorter.order}`;
+    if (keyword) params.keyword = keyword;
+
+    debouncedFetchBooks(params);
+
+    return () => {
+      debouncedFetchBooks.cancel();
+    };
+  }, [pagination.page, pagination.size, sorter, keyword, debouncedFetchBooks]);
+
+  // --- Handlers ---
 
   const handleEdit = useCallback((book: Book) => {
     setEditingBook(book);
@@ -86,7 +141,16 @@ const BookManagementTable = () => {
     try {
       await deleteBook(book.id);
       toast.success('Xóa sách thành công!');
-      revalidator.revalidate();
+
+      // Refresh list
+      const params: PageableParams = {
+        page: pagination.page,
+        size: pagination.size,
+        keyword: keyword,
+      };
+      if (sorter.field && sorter.order)
+        params.sort = `${sorter.field},${sorter.order}`;
+      await fetchBooks(params);
     } catch (error) {
       console.error('Xóa sách thất bại:', error);
       toast.error('Xóa sách thất bại!');
@@ -94,7 +158,7 @@ const BookManagementTable = () => {
       userToDeleteRef.current = null;
       setOpenModalDelete(false);
     }
-  }, [deleteBook, revalidator]);
+  }, [deleteBook, fetchBooks, pagination, keyword, sorter]);
 
   const handleSubmitForm = useCallback(
     async (values: Book) => {
@@ -102,49 +166,46 @@ const BookManagementTable = () => {
         if (isEditing && editingBook) {
           await updateBook(editingBook.id, {
             ...editingBook,
-            ...values, // Spread values to update all fields
+            ...values,
           });
-          setIsEditing(false);
-          setEditingBook(undefined);
           toast.success('Cập nhật sách thành công!');
         } else {
           await createBook(values);
           toast.success('Tạo sách mới thành công!');
         }
-        revalidator.revalidate();
+
+        // Refresh list và đóng modal
+        handleCloseModal();
+
+        // Reset về trang 1 hoặc giữ nguyên trang hiện tại tùy logic
+        const params: PageableParams = {
+          page: pagination.page,
+          size: pagination.size,
+          keyword: keyword,
+        };
+        if (sorter.field && sorter.order)
+          params.sort = `${sorter.field},${sorter.order}`;
+        await fetchBooks(params);
       } catch (error) {
         console.error('Error submitting book:', error);
         toast.error(
           isEditing ? 'Cập nhật sách thất bại!' : 'Tạo sách mới thất bại!',
         );
-      } finally {
-        setOpenModal(false);
       }
     },
-    [createBook, isEditing, updateBook, revalidator, editingBook],
+    [
+      createBook,
+      isEditing,
+      updateBook,
+      editingBook,
+      fetchBooks,
+      pagination,
+      keyword,
+      sorter,
+    ],
   );
 
-  const searchBooksByName = function (text: string) {
-    if (text === '') setBooksShowed(books);
-    else {
-      const result = books.filter((book) =>
-        book.name.toLowerCase().includes(text.toLowerCase()),
-      );
-      setBooksShowed(result);
-    }
-  };
-
-  const sortBooks = (field: keyof Book, order: 'asc' | 'desc') => {
-    const sortedBooks = [...booksShowed].sort((a, b) => {
-      const valA = a[field];
-      const valB = b[field];
-      if (valA === valB) return 0;
-      if (order === 'asc') return valA > valB ? 1 : -1;
-      else return valA > valB ? -1 : 1;
-    });
-    setBooksShowed(sortedBooks);
-  };
-
+  // --- Columns Definition ---
   const columns: CustomTableColumn<Book>[] = [
     {
       key: 'images',
@@ -152,14 +213,18 @@ const BookManagementTable = () => {
       dataIndex: 'images',
       width: 100,
       render: (value) => {
-        if (!Array.isArray(value) || value.length === 0) return '-';
-        const imageUrl = value[0]?.baseUrl;
+        const images = value as BookImage[];
+
+        if (!Array.isArray(images) || images.length === 0) return '-';
+
+        const imageUrl = images[0]?.imageUrl;
         if (!imageUrl) return '-';
+
         return (
           <img
             src={imageUrl}
             alt="Sách"
-            className="w-20 h-[120px] object-cover rounded-md border"
+            className="w-12 h-16 object-cover rounded-md border"
           />
         );
       },
@@ -171,47 +236,33 @@ const BookManagementTable = () => {
       dataIndex: 'authors',
       align: 'center',
       width: 150,
-      render: (value) => {
-        if (!Array.isArray(value)) return '-';
-        return value.map((author) => author?.name || '-').join(', ');
+      render: (value: any) => {
+        if (Array.isArray(value))
+          // Backend trả về list object AuthorResponse {name: string}
+          return value.map((a: any) => a.name).join(', ');
+        return '-';
       },
     },
     {
-      key: 'originalPrice',
+      key: 'price',
       title: 'Giá gốc',
-      dataIndex: 'originalPrice',
+      dataIndex: 'price',
       align: 'center',
       render: (value) => `${Number(value).toLocaleString()} VND`,
     },
     {
-      key: 'categoriesId',
-      title: 'Phân loại',
-      dataIndex: 'categoriesId',
+      key: 'finalPrice', // Thêm cột giá bán thực tế
+      title: 'Giá bán',
+      dataIndex: 'finalPrice',
+      align: 'center',
+      render: (value) => `${Number(value).toLocaleString()} VND`,
+    },
+    {
+      key: 'categoryName', // Update: dùng luôn categoryName từ backend trả về
+      title: 'Danh mục',
+      dataIndex: 'categoryName',
       align: 'center',
       width: 100,
-      render: (value) =>
-        categoriesOption.find((c) => c.id === value)?.name || '-',
-    },
-    {
-      key: 'quantitySold',
-      title: 'Đã bán',
-      dataIndex: 'quantitySold',
-      align: 'center',
-      render: (value) => `${value} quyển`,
-    },
-    {
-      key: 'shortDescription',
-      title: 'Mô tả ngắn',
-      dataIndex: 'shortDescription',
-      width: 200,
-      render: (value: any) =>
-        value ? (
-          <span className="line-clamp-4 text-sm" title={value}>
-            {value}
-          </span>
-        ) : (
-          '-'
-        ),
     },
   ];
 
@@ -229,43 +280,43 @@ const BookManagementTable = () => {
         </div>
 
         <div className="flex flex-wrap gap-3 p-6 border-b">
+          {/* Search Box */}
           <div className="relative w-full sm:w-[250px]">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Tìm kiếm theo tên sách"
-              value={searchText}
+              value={keyword}
               onChange={(e) => {
-                setSearchText(e.target.value);
-                searchBooksByName(e.target.value);
+                setKeyword(e.target.value);
+                setPagination((prev) => ({ ...prev, page: 1 })); // Reset về trang 1 khi search
               }}
               className="pl-8"
             />
           </div>
 
+          {/* Sort Field */}
           <Select
-            value={fieldSelected}
-            onValueChange={(value) => {
-              setFieldSelected(value);
-              if (value && order) sortBooks(value as keyof Book, order);
-            }}
+            value={sorter.field}
+            onValueChange={(value) =>
+              setSorter((prev) => ({ ...prev, field: value }))
+            }
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Chọn trường sắp xếp" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="quantitySold">Số lượng đã bán</SelectItem>
-              <SelectItem value="originalPrice">Giá gốc</SelectItem>
               <SelectItem value="name">Tên sách</SelectItem>
-              {/* authors is complex to sort simply like this, might need custom logic */}
+              <SelectItem value="price">Giá gốc</SelectItem>
+              <SelectItem value="finalPrice">Giá bán</SelectItem>
             </SelectContent>
           </Select>
 
+          {/* Sort Order */}
           <Select
-            value={order}
-            onValueChange={(value: 'asc' | 'desc') => {
-              setOrder(value);
-              if (fieldSelected) sortBooks(fieldSelected as keyof Book, value);
-            }}
+            value={sorter.order}
+            onValueChange={(value) =>
+              setSorter((prev) => ({ ...prev, order: value }))
+            }
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Chiều sắp xếp" />
@@ -277,12 +328,20 @@ const BookManagementTable = () => {
           </Select>
         </div>
 
+        {/* Table Component */}
         <AdminTable<Book>
-          data={booksShowed}
+          data={books}
           columns={columns}
+          loading={loading}
           onEdit={handleEdit}
           onDelete={handleDelete}
           className="p-0 border-none shadow-none rounded-none"
+          pagination={{
+            page: pagination.page,
+            size: pagination.size,
+            total: pagination.total,
+          }}
+          onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
         />
       </div>
 

@@ -59,28 +59,42 @@ export interface Specification {
   attributes: Attribute[];
 }
 
-export interface Book {
+export interface Author {
   id: number;
   name: string;
-  authors: Author[];
-  description: string;
-  images: ImageBook[];
-  originalPrice: number;
-  listPrice: number;
-  ratingAverage: number;
+}
+
+export interface BookImage {
+  id: number;
+  imageUrl: string;
+}
+
+export interface Book {
+  id: number;
+
+  // Category info
+  categoryId: number;
+  categoryName: string; // Backend đã join và trả về tên, tiện cho việc hiển thị
+
+  // Basic info
+  name: string;
   shortDescription: string;
-  publisherVn: string;
-  publicationDate: string;
-  dimensions: string;
-  dichGia: string;
-  manufacturer: string;
-  bookCover: string;
-  numberOfPage: number;
+  description: string;
+  isbn: string;
+  dimension: string;
+  numberOfPages: number;
+  publisher: string;
+  publisherDate: string;
   stockQuantity: number;
-  isActive: boolean;
-  categoriesId: number;
-  quantitySold: number;
-  thumbnailUrl: string;
+  price: number;
+  discount: number;
+  finalPrice: number;
+  ratingAvg: number;
+  ratingCount: number;
+  createdAt: string;
+  updatedAt: string;
+  authors: Author[];
+  images: BookImage[];
 }
 
 export interface Item {
