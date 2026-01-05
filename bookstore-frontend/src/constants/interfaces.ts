@@ -226,6 +226,7 @@ export interface CartItem {
   price: number;
   originalPrice?: number;
   quantity: number;
+  selected?: boolean;
 }
 
 /**

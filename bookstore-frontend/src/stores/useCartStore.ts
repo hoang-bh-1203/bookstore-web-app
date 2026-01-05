@@ -1,17 +1,10 @@
-/**
- * Shopping cart store using Zustand with Immer
- * Manages cart items and recent order information with persistent storage
- */
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { immer } from 'zustand/middleware/immer'; // Use Immer for safe state mutations
+import { immer } from 'zustand/middleware/immer';
 import type { CartItem, CreateOrderResponse } from '@/constants/interfaces';
 import { formattedPrice } from '@/utils/priceHelper';
 import { randomDeliveryDate } from '@/utils/dateHelper';
 
-/**
- * Cart state interface
- */
 interface CartState {
   items: CartItem[];
   recentOrder: {
@@ -24,42 +17,29 @@ interface CartState {
   } | null;
 }
 
-/**
- * Cart actions interface
- */
 interface CartActions {
   addToCart: (item: CartItem) => void;
   removeFromCart: (productId: number) => void;
   updateQuantity: (payload: { id: number; quantity: number }) => void;
+
+  // --- NEW: Selection Actions ---
+  toggleItemSelection: (productId: number) => void;
+  toggleAllSelection: () => void;
+
   clearCart: () => void;
   setRecentOrder: (order: CreateOrderResponse) => void;
   clearRecentOrder: () => void;
 }
 
-/**
- * Initial cart state
- */
 const initialState: CartState = {
-  items: [], // Will be hydrated from localStorage by persist middleware
+  items: [],
   recentOrder: null,
 };
 
-/**
- * Create cart store with Immer and persistence
- * Immer middleware must be wrapped inside persist middleware
- */
 export const useCartStore = create<CartState & CartActions>()(
   persist(
-    // Immer allows direct state mutations (like Redux Toolkit)
-    // e.g., state.items.push() instead of returning new arrays
     immer((set) => ({
       ...initialState,
-
-      /**
-       * All reducer logic goes here
-       * Note: No manual localStorage.setItem calls needed
-       * Persist middleware handles storage automatically after each state change
-       */
 
       addToCart: (newItem) =>
         set((state) => {
@@ -68,8 +48,11 @@ export const useCartStore = create<CartState & CartActions>()(
           );
           if (existingItem) {
             existingItem.quantity += newItem.quantity;
+            // Tùy chọn: Khi thêm lại sản phẩm đã có, có muốn tự động select nó không?
+            // existingItem.selected = true;
           } else {
-            state.items.push(newItem);
+            // Mặc định khi thêm mới là selected = true
+            state.items.push({ ...newItem, selected: true });
           }
         }),
 
@@ -88,18 +71,36 @@ export const useCartStore = create<CartState & CartActions>()(
           }
         }),
 
+      // --- NEW: Logic Toggle 1 Item ---
+      toggleItemSelection: (productId) =>
+        set((state) => {
+          const item = state.items.find((i: any) => i.productId === productId);
+          if (item) {
+            item.selected = !item.selected;
+          }
+        }),
+
+      // --- NEW: Logic Toggle All ---
+      toggleAllSelection: () =>
+        set((state) => {
+          // Kiểm tra xem tất cả có đang được chọn không (bỏ qua giỏ hàng rỗng)
+          const allCurrentlySelected =
+            state.items.length > 0 && state.items.every((i: any) => i.selected);
+
+          // Nếu tất cả đang chọn -> bỏ chọn tất cả. Ngược lại -> chọn tất cả
+          state.items.forEach((i: any) => {
+            i.selected = !allCurrentlySelected;
+          });
+        }),
+
       clearCart: () =>
         set((state) => {
           state.items = [];
         }),
 
-      // Manage recent order information
       setRecentOrder: (payload) =>
         set((state) => {
-          if (!payload || !payload.orderId) {
-            console.error('Invalid order data:', payload);
-            return;
-          }
+          if (!payload || !payload.orderId) return;
           const price = formattedPrice(payload.totalAmount);
           state.recentOrder = {
             totalAmount: price,
@@ -117,18 +118,9 @@ export const useCartStore = create<CartState & CartActions>()(
         }),
     })),
     {
-      name: 'cart-storage', // localStorage key name
+      name: 'cart-storage',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ items: state.items }), // Only persist cart items, not recentOrder
+      partialize: (state) => ({ items: state.items }),
     },
   ),
 );
-
-export const {
-  addToCart,
-  removeFromCart,
-  updateQuantity,
-  clearCart,
-  setRecentOrder,
-  clearRecentOrder,
-} = useCartStore.getState();
