@@ -1,5 +1,5 @@
 const TableColumnNoData = () => {
-  return <span className="italic text-muted-foreground">&lt;No data&gt;</span>;
+  return <span className="italic text-muted-foreground">&lt;Không có&gt;</span>;
 };
 
 export default TableColumnNoData;

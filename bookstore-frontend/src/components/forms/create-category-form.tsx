@@ -17,7 +17,7 @@ import { Loader2, LayoutGrid } from 'lucide-react';
 import type { Category } from '@/constants/interfaces';
 import SearchableSelector from '@/components/common/searchable-selector';
 import { useCategory } from '@/hooks/useCategory';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 // 1. Zod Schema
 const formSchema = z.object({
@@ -27,6 +27,13 @@ const formSchema = z.object({
     .max(50, 'Tên không được vượt quá 50 ký tự.'),
   parentId: z.number().optional().nullable(),
 });
+
+const getParentId = (data?: Category | any) => {
+  if (!data) return undefined;
+  if (data.parent?.id) return data.parent.id;
+  if (data.parentId) return data.parentId;
+  return undefined;
+};
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -50,16 +57,32 @@ export default function CreateCategoryForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: defaultValues?.name || '',
-      parentId: defaultValues?.parent?.id || undefined,
+      parentId: getParentId(defaultValues),
     },
   });
+
+  const initialParentCategory = useMemo(() => {
+    if (!defaultValues) return undefined;
+    if (defaultValues.parent) return defaultValues.parent;
+
+    const flatData = defaultValues as any;
+    if (flatData.parentId && flatData.parentName) {
+      return {
+        id: flatData.parentId,
+        name: flatData.parentName,
+        parent: null,
+      } as Category;
+    }
+
+    return undefined;
+  }, [defaultValues]);
 
   // Sync default values when they change (for editing)
   useEffect(() => {
     if (defaultValues) {
       form.reset({
         name: defaultValues.name || '',
-        parentId: defaultValues.parent?.id || undefined,
+        parentId: getParentId(defaultValues),
       });
     }
   }, [defaultValues, form]);
@@ -105,8 +128,13 @@ export default function CreateCategoryForm({
                     placeholder="Chọn danh mục cha"
                     valueKey="id"
                     labelKey="name"
-                    pageSize={10}
-                    defaultValue={field.value}
+                    pageSize={100}
+                    key={
+                      defaultValues?.id
+                        ? `edit-${defaultValues.id}`
+                        : 'create-new'
+                    }
+                    defaultValue={initialParentCategory}
                     fetchData={searchCategories}
                     onSelect={(option) => {
                       field.onChange(option ? option.id : null);

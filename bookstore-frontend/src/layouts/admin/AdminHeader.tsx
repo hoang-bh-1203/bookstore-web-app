@@ -28,8 +28,14 @@ export default function AdminHeader({ collapsed, onToggle }: AdminHeaderProps) {
   // User dropdown menu configuration using Lucide icons
   const userMenuItems = [
     {
+      key: 'info',
+      icon: <User className="mr-2 h-4 w-4" />,
+      label: 'Thông tin cá nhân',
+      danger: false,
+    },
+    {
       key: 'logout',
-      icon: <LogOut className="mr-2 h-4 w-4" />,
+      icon: <LogOut className="mr-2 h-4 w-4 text-destructive" />,
       label: 'Đăng xuất',
       danger: true,
     },
@@ -45,7 +51,9 @@ export default function AdminHeader({ collapsed, onToggle }: AdminHeaderProps) {
         logout();
         navigate('/admin/login');
         break;
-      // Add more cases as needed
+      case 'info':
+        navigate('/admin/profile');
+        break;
     }
   };
 
@@ -82,7 +90,7 @@ export default function AdminHeader({ collapsed, onToggle }: AdminHeaderProps) {
             </div>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent>
             {/* Map through menu items and handle clicks */}
             {userMenuItems.map((item) => (
               <DropdownMenuItem

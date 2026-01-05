@@ -1,3 +1,5 @@
+// components/common/custom-table.tsx
+
 import React, { type ReactNode } from 'react';
 import {
   Table,
@@ -13,12 +15,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+// Giả sử bạn có hàm check null/empty, nếu không có thể thay bằng check thông thường
 import { isNilOrEmpty } from '@/utils/dataHelper';
 import TableColumnNoData from './table-column-no-data';
-import { cn } from '@/lib/utils';
 
 export interface CustomTableColumn<T> {
   key: string;
@@ -43,7 +55,12 @@ export interface CustomTableProps<
   showSelection?: boolean;
   selectedRowKeys?: React.Key[];
   onSelectionChange?: (selectedRowKeys: React.Key[], selectedRows: T[]) => void;
-  // Pagination props có thể thêm vào sau nếu cần custom pagination component
+  pagination?: {
+    page: number;
+    size: number;
+    total: number;
+  };
+  onPageChange?: (page: number) => void;
 }
 
 const AdminTable = <T extends { id: number | string; disabled?: boolean }>({
@@ -58,6 +75,8 @@ const AdminTable = <T extends { id: number | string; disabled?: boolean }>({
   showSelection = false,
   selectedRowKeys = [],
   onSelectionChange,
+  pagination,
+  onPageChange,
 }: CustomTableProps<T>) => {
   const getRowKey = (record: T): string => {
     if (typeof rowKey === 'function') {
@@ -96,10 +115,88 @@ const AdminTable = <T extends { id: number | string; disabled?: boolean }>({
     }
   };
 
+  const renderPaginationItems = () => {
+    if (!pagination || !onPageChange) return null;
+
+    const { page, size, total } = pagination;
+    const totalPages = Math.ceil(total / size);
+
+    if (totalPages < 1) return null;
+
+    const items = [];
+
+    // Trang đầu
+    items.push(
+      <PaginationItem key={1}>
+        <PaginationLink
+          isActive={page === 1}
+          onClick={() => onPageChange(1)}
+          className="cursor-pointer"
+        >
+          1
+        </PaginationLink>
+      </PaginationItem>,
+    );
+
+    // Dấu ... bên trái
+    if (page > 3) {
+      items.push(
+        <PaginationItem key="ellipsis-start">
+          <PaginationEllipsis />
+        </PaginationItem>,
+      );
+    }
+
+    // Các trang ở giữa
+    const start = Math.max(2, page - 1);
+    const end = Math.min(totalPages - 1, page + 1);
+
+    for (let i = start; i <= end; i++) {
+      items.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            isActive={page === i}
+            onClick={() => onPageChange(i)}
+            className="cursor-pointer"
+          >
+            {i}
+          </PaginationLink>
+        </PaginationItem>,
+      );
+    }
+
+    // Dấu ... bên phải
+    if (page < totalPages - 2) {
+      items.push(
+        <PaginationItem key="ellipsis-end">
+          <PaginationEllipsis />
+        </PaginationItem>,
+      );
+    }
+
+    // Trang cuối
+    if (totalPages > 1) {
+      items.push(
+        <PaginationItem key={totalPages}>
+          <PaginationLink
+            isActive={page === totalPages}
+            onClick={() => onPageChange(totalPages)}
+            className="cursor-pointer"
+          >
+            {totalPages}
+          </PaginationLink>
+        </PaginationItem>,
+      );
+    }
+
+    return items;
+  };
+
   return (
     <div className={cn('p-6', className)}>
       <div className="rounded-md border">
         <Table>
+          {/* PHẦN HEADER: Hiển thị tên các cột */}
           <TableHeader>
             <TableRow>
               {showSelection && (
@@ -131,10 +228,14 @@ const AdminTable = <T extends { id: number | string; disabled?: boolean }>({
                 </TableHead>
               ))}
               {showActions && (
-                <TableHead className="w-[80px] text-center">Actions</TableHead>
+                <TableHead className="w-[80px] text-center">
+                  Hành động
+                </TableHead>
               )}
             </TableRow>
           </TableHeader>
+
+          {/* PHẦN BODY: Hiển thị dữ liệu */}
           <TableBody>
             {loading ? (
               <TableRow>
@@ -146,7 +247,7 @@ const AdminTable = <T extends { id: number | string; disabled?: boolean }>({
                   }
                   className="h-24 text-center"
                 >
-                  Loading...
+                  Đang tải dữ liệu...
                 </TableCell>
               </TableRow>
             ) : data.length === 0 ? (
@@ -159,7 +260,7 @@ const AdminTable = <T extends { id: number | string; disabled?: boolean }>({
                   }
                   className="h-24 text-center"
                 >
-                  No results.
+                  Không có dữ liệu.
                 </TableCell>
               </TableRow>
             ) : (
@@ -168,6 +269,7 @@ const AdminTable = <T extends { id: number | string; disabled?: boolean }>({
                 const isSelected = selectedRowKeys.includes(key);
                 return (
                   <TableRow key={key} data-state={isSelected && 'selected'}>
+                    {/* Checkbox row */}
                     {showSelection && (
                       <TableCell>
                         <Checkbox
@@ -180,6 +282,8 @@ const AdminTable = <T extends { id: number | string; disabled?: boolean }>({
                         />
                       </TableCell>
                     )}
+
+                    {/* Dữ liệu các cột */}
                     {columns.map((col) => (
                       <TableCell
                         key={col.key}
@@ -200,6 +304,8 @@ const AdminTable = <T extends { id: number | string; disabled?: boolean }>({
                         )}
                       </TableCell>
                     ))}
+
+                    {/* Nút Hành động */}
                     {showActions && (
                       <TableCell className="text-center">
                         <DropdownMenu>
@@ -232,7 +338,40 @@ const AdminTable = <T extends { id: number | string; disabled?: boolean }>({
           </TableBody>
         </Table>
       </div>
-      {/* Pagination controls need to be added here separately if needed, utilizing Shadcn Pagination component */}
+
+      {/* PHẦN PAGINATION UI */}
+      {pagination && onPageChange && pagination.total > 0 && (
+        <div className="py-4 flex justify-end">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => onPageChange(pagination.page - 1)}
+                  className={
+                    pagination.page <= 1
+                      ? 'pointer-events-none opacity-50'
+                      : 'cursor-pointer'
+                  }
+                />
+              </PaginationItem>
+
+              {renderPaginationItems()}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => onPageChange(pagination.page + 1)}
+                  className={
+                    pagination.page >=
+                    Math.ceil(pagination.total / pagination.size)
+                      ? 'pointer-events-none opacity-50'
+                      : 'cursor-pointer'
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   );
 };

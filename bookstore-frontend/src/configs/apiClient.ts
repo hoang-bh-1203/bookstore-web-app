@@ -49,7 +49,6 @@ apiClient.interceptors.response.use(
 
         if (newAccessToken) {
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          console.log(apiClient(originalRequest));
           return apiClient(originalRequest);
         }
       } catch (refreshError) {

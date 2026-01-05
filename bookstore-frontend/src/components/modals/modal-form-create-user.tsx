@@ -24,13 +24,16 @@ export default function ModalFormCreateUser({
 }: ModalFormCreateUserProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
+      <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="sm:max-w-[550px] max-h-[90vh] p-0 gap-0 flex flex-col"
+      >
+        <DialogHeader className="p-6 pb-2">
           <DialogTitle>
             {defaultValues ? 'Cập nhật người dùng' : 'Tạo người dùng mới'}
           </DialogTitle>
         </DialogHeader>
-        <div className="pt-4">
+        <div className="flex-1 overflow-y-auto p-6 pt-2">
           <CreateUserForm
             onSubmit={handleSubmit}
             onCancel={onClose}

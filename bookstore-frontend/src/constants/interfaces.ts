@@ -3,6 +3,7 @@ export interface User {
   email: string;
   fullName: string;
   avatarUrl: string | null;
+  password: string;
   phone: string;
   address: string;
   isActive: boolean;
@@ -58,47 +59,68 @@ export interface Specification {
   attributes: Attribute[];
 }
 
-export interface Book {
+export interface Author {
   id: number;
   name: string;
-  authors: Author[];
-  description: string;
-  images: ImageBook[];
-  originalPrice: number;
-  listPrice: number;
-  ratingAverage: number;
-  shortDescription: string;
-  publisherVn: string;
-  publicationDate: string;
-  dimensions: string;
-  dichGia: string;
-  manufacturer: string;
-  bookCover: string;
-  numberOfPage: number;
-  stockQuantity: number;
-  isActive: boolean;
-  categoriesId: number;
-  quantitySold: number;
-  thumbnailUrl: string;
 }
 
-export interface Item {
+export interface BookImage {
   id: number;
-  quantity: number;
+  imageUrl: string;
+}
+
+export interface Book {
+  id: number;
+
+  // Category info
+  categoryId: number;
+  categoryName: string; // Backend đã join và trả về tên, tiện cho việc hiển thị
+
+  // Basic info
   name: string;
+  shortDescription: string;
+  description: string;
+  isbn: string;
+  dimension: string;
+  numberOfPages: number;
+  publisher: string;
+  publisherDate: string;
+  stockQuantity: number;
   price: number;
-  thumbnail?: string;
+  discount: number;
+  finalPrice: number;
+  ratingAvg: number;
+  ratingCount: number;
+  createdAt: string;
+  updatedAt: string;
+  authors: Author[];
+  images: BookImage[];
+}
+
+export interface OrderItem {
+  id: number;
+  productId: number;
+  productName: string;
+  productPrice: number;
+  productDiscount: number;
+  quantity: number;
+  total: number;
 }
 
 export interface Order {
   id: number;
+  customerId: number;
   customerName: string;
-  products: Item[];
-  totalPrice: number;
-  status: string;
-  createdAt?: string;
-  address?: string;
-  phone?: string;
+  customerEmail: string;
+  address: string;
+  status: 'PENDING' | 'CONFIRMED' | 'DELIVERED' | 'COMPLETED' | 'CANCELLED'; // Enum status
+  methodPayment: string;
+  paymentStatus: string;
+  totalAmount: number; // Backend trả về totalAmount, không phải totalPrice
+  totalItem: number;
+  items: OrderItem[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface OrderCreate {
@@ -168,6 +190,18 @@ export interface ProductItem {
   discountPercent: number;
 }
 
+export interface OrderStatusStat {
+  status: string;
+  count: number;
+}
+
+export interface DashboardStats {
+  totalOrders: number;
+  totalRevenue: number;
+  deliveringOrders: number;
+  statusBreakdown: OrderStatusStat[];
+}
+
 export interface FeaturedCollectionData {
   logo: string;
   title: string;
@@ -182,6 +216,7 @@ export interface PageableParams {
   size?: number;
   sort?: string;
   keyword?: string;
+  status?: string;
 }
 
 export interface CartItem {

@@ -1,6 +1,8 @@
+// components/common/searchable-selector.tsx
+
 import * as React from 'react';
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Check, ChevronsUpDown, Loader2, Search } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { debounce } from 'lodash';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -29,10 +31,10 @@ interface SearchableSelectorProps<T> {
   pageSize?: number;
   fetchData: (params: PageableParams) => Promise<T[]>;
   renderExtraInfo?: (item: T) => React.ReactNode;
-  defaultValue?: any;
+  defaultValue?: T; // Chúng ta mong đợi một Object đầy đủ ở đây
 }
 
-function SearchableSelector<T>({
+function SearchableSelector<T extends Record<string, any>>({
   placeholder = 'Tìm kiếm và chọn...',
   valueKey,
   labelKey,
@@ -48,7 +50,14 @@ function SearchableSelector<T>({
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchValue, setSearchValue] = useState('');
-  const [selectedValue, setSelectedValue] = useState<any>(defaultValue);
+
+  // State lưu trữ item đang được chọn (Object đầy đủ)
+  const [selectedItem, setSelectedItem] = useState<T | undefined>(defaultValue);
+
+  // Cập nhật selectedItem khi defaultValue thay đổi từ bên ngoài (ví dụ: khi mở modal edit)
+  useEffect(() => {
+    setSelectedItem(defaultValue);
+  }, [defaultValue]);
 
   const handleFetchData = async (searchTerm = '') => {
     setLoading(true);
@@ -72,27 +81,23 @@ function SearchableSelector<T>({
   ]);
 
   useEffect(() => {
-    debouncedFetch(searchValue);
-  }, [searchValue, debouncedFetch]);
-
-  // Initialize with default value if provided, might need a way to fetch initial single item if not in list
-  useEffect(() => {
-    if (defaultValue && data.length === 0) {
-      // Optional: logic to fetch specific item by ID if needed for initial display
+    // Chỉ fetch khi mở popup hoặc search thay đổi
+    if (open) {
+      debouncedFetch(searchValue);
     }
-  }, [defaultValue, data]);
+    // Cleanup debounce khi unmount
+    return () => {
+      debouncedFetch.cancel();
+    };
+  }, [searchValue, debouncedFetch, open]);
 
-  const filteredOptions = useMemo(() => {
-    return data.map((item) => ({
-      value: item[valueKey] as string, // Command value should ideally be string
-      label: item[labelKey] as string,
-      data: item,
-    }));
-  }, [data, valueKey, labelKey]);
-
-  const selectedOption = filteredOptions.find(
-    (opt) => opt.value === selectedValue,
-  );
+  const handleSelect = (item: T) => {
+    setSelectedItem(item);
+    setOpen(false);
+    if (onSelect) {
+      onSelect(item);
+    }
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -104,11 +109,13 @@ function SearchableSelector<T>({
           className={cn('w-full justify-between', className)}
           disabled={disabled}
         >
-          {selectedOption ? (
-            selectedOption.label
+          {/* Hiển thị label từ selectedItem (dù nó có trong list data hay không) */}
+          {selectedItem ? (
+            String(selectedItem[labelKey])
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
           )}
+
           {loading ? (
             <Loader2 className="ml-2 h-4 w-4 animate-spin opacity-50" />
           ) : (
@@ -116,13 +123,13 @@ function SearchableSelector<T>({
           )}
         </Button>
       </PopoverTrigger>
+
+      {/* Thêm z-index cao và Portal nếu bị lỗi hiển thị đè, nhưng thường shadcn xử lý rồi */}
       <PopoverContent
         className="w-[--radix-popover-trigger-width] p-0"
         align="start"
       >
         <Command shouldFilter={false}>
-          {' '}
-          {/* We do server-side filtering */}
           <CommandInput
             placeholder={placeholder}
             value={searchValue}
@@ -134,41 +141,37 @@ function SearchableSelector<T>({
                 <Loader2 className="mx-auto h-4 w-4 animate-spin" /> Đang tải...
               </div>
             )}
-            {!loading && filteredOptions.length === 0 && (
-              <CommandEmpty>Không tìm thấy.</CommandEmpty>
+
+            {!loading && data.length === 0 && (
+              <CommandEmpty>Không tìm thấy kết quả.</CommandEmpty>
             )}
+
             <CommandGroup>
-              {filteredOptions.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.value}
-                  onSelect={(currentValue) => {
-                    const newVal =
-                      currentValue === selectedValue ? '' : currentValue;
-                    setSelectedValue(newVal);
-                    const selectedItem = filteredOptions.find(
-                      (opt) => opt.value === newVal,
-                    );
-                    if (onSelect) {
-                      onSelect(selectedItem ? selectedItem.data : null);
-                    }
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      'mr-2 h-4 w-4',
-                      selectedValue === option.value
-                        ? 'opacity-100'
-                        : 'opacity-0',
-                    )}
-                  />
-                  <div className="flex flex-col">
-                    <span>{option.label}</span>
-                    {renderExtraInfo && renderExtraInfo(option.data)}
-                  </div>
-                </CommandItem>
-              ))}
+              {data.map((item) => {
+                // Ép kiểu về String để so sánh an toàn
+                const isSelected = selectedItem
+                  ? String(selectedItem[valueKey]) === String(item[valueKey])
+                  : false;
+
+                return (
+                  <CommandItem
+                    key={String(item[valueKey])}
+                    value={String(item[labelKey])} // Dùng tên để search/filter local (nếu bật filter)
+                    onSelect={() => handleSelect(item)}
+                  >
+                    <Check
+                      className={cn(
+                        'mr-2 h-4 w-4',
+                        isSelected ? 'opacity-100' : 'opacity-0',
+                      )}
+                    />
+                    <div className="flex flex-col">
+                      <span>{item[labelKey]}</span>
+                      {renderExtraInfo && renderExtraInfo(item)}
+                    </div>
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           </CommandList>
         </Command>

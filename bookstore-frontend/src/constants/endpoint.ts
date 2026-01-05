@@ -30,6 +30,7 @@ export const API_ENDPOINTS = {
   CATEGORIES_WITH_SUB: '/categories/with-subcategories',
   // Order API endpoints
   ORDERS: '/orders',
+  ORDERS_STAT: '/orders/stats',
   ORDERS_CREATE: '/orders/create',
   ORDER_BY_ID: (id: number) => `/orders/${id}`,
   MY_ORDERS: '/orders/me',
@@ -37,8 +38,8 @@ export const API_ENDPOINTS = {
   GET_BOOK_FEATURED_COLLECTIONS: '/featured-collections',
 
   // Image upload endpoint
-  UPLOAD_IMAGE: 'images/upload',
-  DELETE_IMAGE: (fileId: string) => `images/delete/${fileId}`,
+  UPLOAD_IMAGE: '/uploads',
+  DELETE_IMAGE: (fileId: string) => `/uploads/${fileId}`,
 
   // Dashboard API endpoints
   ADMIN_DASHBOARD: 'admin/dashboard',
