@@ -36,7 +36,7 @@ import { toast } from 'sonner';
 const userColumns: CustomTableColumn<User>[] = [
   {
     key: 'fullName',
-    title: 'Full Name',
+    title: 'Tên người dùng',
     dataIndex: 'fullName',
     render: (value, record) =>
       isNilOrEmpty(value) ? (
@@ -66,13 +66,13 @@ const userColumns: CustomTableColumn<User>[] = [
   },
   {
     key: 'phone',
-    title: 'Phone',
+    title: 'Số điện thoại',
     dataIndex: 'phone',
     render: (value) => (isNilOrEmpty(value) ? <TableColumnNoData /> : value),
   },
   {
     key: 'isActive',
-    title: 'Active',
+    title: 'Trạng thái',
     dataIndex: 'isActive',
     align: 'center',
     render: (value) => (
@@ -80,13 +80,13 @@ const userColumns: CustomTableColumn<User>[] = [
         variant={value ? 'default' : 'secondary'}
         className={value ? 'bg-green-500 hover:bg-green-600' : ''}
       >
-        {value ? 'Active' : 'Inactive'}
+        {value ? 'Đã kích hoạt' : 'Chưa kích hoạt'}
       </Badge>
     ),
   },
   {
     key: 'role',
-    title: 'Role',
+    title: 'Vai trò',
     dataIndex: 'role',
     align: 'center',
     render: (value) =>
@@ -99,13 +99,13 @@ const userColumns: CustomTableColumn<User>[] = [
             value === 'ROLE_USER' ? 'bg-blue-500 hover:bg-blue-600' : ''
           }
         >
-          {value === 'ROLE_USER' ? 'User' : 'Admin'}
+          {value === 'ROLE_USER' ? 'Khách hàng' : 'Quản trị viên'}
         </Badge>
       ),
   },
   {
     key: 'createdAt',
-    title: 'Created At',
+    title: 'Ngày tạo',
     dataIndex: 'createdAt',
     render: (value) =>
       isNilOrEmpty(value) ? (
@@ -124,7 +124,7 @@ const UserManagementTable = () => {
   const [isEditing, setIsEditing] = useState(false);
   const { getAllUsers, createUser, deleteUser, updateUser } = useUser();
   const revalidator = useRevalidator();
-  const [pagination, setPagination] = useState({ page: 1, size: 20, total: 0 });
+  const [pagination, setPagination] = useState({ page: 1, size: 10, total: 0 });
   const [sorter, setSorter] = useState<{ field?: string; order?: string }>({});
   const [keyword, setKeyword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -304,6 +304,12 @@ const UserManagementTable = () => {
           onEdit={handleEdit}
           onDelete={handleDelete}
           className="p-0 border-none shadow-none rounded-none"
+          pagination={{
+            page: pagination.page,
+            size: pagination.size,
+            total: pagination.total,
+          }}
+          onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
         />
         {/* TODO: Add Shadcn Pagination component here based on `pagination` state */}
       </div>

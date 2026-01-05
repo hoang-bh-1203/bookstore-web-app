@@ -1,11 +1,19 @@
 import Request from '@/configs/api';
 import { API_ENDPOINTS } from '@/constants/endpoint';
-import type { Category, PageableParams } from '@/constants/interfaces';
+import type {
+  Category,
+  PageableParams,
+  PagedResponse,
+} from '@/constants/interfaces';
 import { useCallback } from 'react';
 
 export const useCategory = () => {
-  const getAllCategories = useCallback(async () => {
-    return await Request.get<Category[]>(API_ENDPOINTS.CATEGORIES);
+  const getAllCategories = useCallback(async (params: PageableParams) => {
+    const response = await Request.get<PagedResponse<Category>>(
+      API_ENDPOINTS.CATEGORIES,
+      { params },
+    );
+    return response;
   }, []);
 
   const searchCategories = useCallback(async (params: PageableParams) => {
