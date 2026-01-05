@@ -88,7 +88,7 @@ const router = createBrowserRouter([
   {
     path: '/payment',
     element: (
-      <RequireRoleWrapper role="USER">
+      <RequireRoleWrapper role="ROLE_USER">
         <Payment />
       </RequireRoleWrapper>
     ),
@@ -96,7 +96,7 @@ const router = createBrowserRouter([
   {
     path: '/admin',
     element: (
-      <RequireRoleWrapper role="ADMIN">
+      <RequireRoleWrapper role="ROLE_ADMIN">
         <AdminLayout />
       </RequireRoleWrapper>
     ),

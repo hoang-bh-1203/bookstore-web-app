@@ -74,7 +74,6 @@ const AdminProfile = () => {
       };
       const response = await updateUser(user.id, payload);
       if (response) {
-        localStorage.setItem('user', JSON.stringify(response));
         setUser(response);
         toast.success('Cập nhật thông tin thành công!');
       }

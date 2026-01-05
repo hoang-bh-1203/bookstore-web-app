@@ -18,7 +18,7 @@ const LoginAdmin = () => {
   if (isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-muted/30">
       <div className="w-full max-w-md">
         <AdminLoginForm />
       </div>

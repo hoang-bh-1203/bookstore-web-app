@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 
 interface RequireRoleProps {
   children: JSX.Element;
-  role: 'ADMIN' | 'USER';
+  role: 'ROLE_ADMIN' | 'ROLE_USER';
 }
 
 const RequireRole = ({ children, role }: RequireRoleProps) => {
@@ -21,7 +21,11 @@ const RequireRole = ({ children, role }: RequireRoleProps) => {
   }
 
   if (!user || !isAuthenticated) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    if (role === 'ROLE_ADMIN') {
+      return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    } else {
+      return <Navigate to="/" state={{ from: location }} replace />;
+    }
   }
 
   if (user.role !== role) {

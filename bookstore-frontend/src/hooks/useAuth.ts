@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 export const useAuth = () => {
   // Use stable selectors - select primitive values and functions separately
   const user = useAuthStore((state) => state.user);
-  const token = useAuthStore((state) => state.token);
+  const accessToken = useAuthStore((state) => state.accessToken);
   const error = useAuthStore((state) => state.error);
   const isLoading = useAuthStore((state) => state.isLoading);
   const loginAction = useAuthStore((state) => state.login);
@@ -20,8 +20,8 @@ export const useAuth = () => {
   const navigate = useNavigate();
 
   // Compute derived values
-  const isAuthenticated = !!token;
-  const isAdmin = user?.role === 'ADMIN';
+  const isAuthenticated = !!accessToken;
+  const isAdmin = user?.role === 'ROLE_ADMIN';
 
   const handleLogin = useCallback(
     async (email: string, password: string) => {
