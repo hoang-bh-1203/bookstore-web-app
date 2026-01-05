@@ -21,11 +21,6 @@ export default function SummaryToggle({ content }: SummaryToggleProps) {
         {/* Header */}
         <CollapsibleTrigger className="flex items-center justify-between w-full cursor-pointer">
           <div className="flex items-center gap-1.5">
-            <img
-              src="/src/assets/ai.svg"
-              alt="ai"
-              style={{ width: 20, height: 20 }}
-            />
             <span className="">Tóm tắt nội dung sách</span>
           </div>
           {open ? (

@@ -43,7 +43,7 @@ export default function BookDetail() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen pb-20 lg:pb-0">
+    <div className="flex-grow container mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-6">
       <CustomBreadcrumb items={breadcrumbItems} />
       <main className="flex-1 mt-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

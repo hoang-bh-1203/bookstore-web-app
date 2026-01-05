@@ -10,7 +10,7 @@ export function RecommendedProductsSection() {
   return (
     <div className="bg-white py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-2xl font-bold mb-6">Dành mua sắn phẩm</h2>
+        <h2 className="text-2xl font-bold mb-6">Dành mua sản phẩm</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {products.map((product) => (
             <div

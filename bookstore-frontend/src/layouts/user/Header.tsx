@@ -2,15 +2,28 @@
 
 import { ShoppingCart, Menu, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '@/hooks/useCart';
 import { AuthModal } from '@/components/auth-modal';
 import { useState } from 'react';
 import logo from '@/assets/logo.png';
 
 export function Header() {
+  const location = useLocation();
+
   const { totalItems } = useCart();
   const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  const getLinkClass = (path: string) => {
+    const baseClass =
+      'text-sm font-medium transition-colors hover:text-secondary';
+    // So sánh đường dẫn hiện tại với path của link
+    // Sử dụng location.pathname === path để match chính xác
+    const activeClass =
+      location.pathname === path ? 'text-secondary' : 'text-muted-foreground';
+
+    return `${baseClass} ${activeClass}`;
+  };
 
   return (
     <>
@@ -24,28 +37,16 @@ export function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-8">
-              <Link
-                to="/"
-                className="text-sm font-medium text-foreground hover:text-secondary transition-colors"
-              >
+              <Link to="/" className={getLinkClass('/')}>
                 Trang chủ
               </Link>
-              <Link
-                to="/products"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
+              <Link to="/products" className={getLinkClass('/products')}>
                 Sản phẩm
               </Link>
-              <Link
-                to="#"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
+              <Link to="#" className={getLinkClass('/bestseller')}>
                 Bestseller
               </Link>
-              <Link
-                to="#"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
+              <Link to="#" className={getLinkClass('/about')}>
                 Về chúng tôi
               </Link>
             </nav>
