@@ -75,6 +75,93 @@ def insert_categories():
         conn.close()
 
 
+def insert_authors():
+    """Insert authors data from JSON file into MySQL database"""
+
+    # Connect to MySQL
+    conn = mysql.connector.connect(
+        host=Config.MYSQL_HOST,
+        port=Config.MYSQL_PORT,
+        user=Config.MYSQL_USER,
+        password=Config.MYSQL_PASSWORD,
+        database=Config.MYSQL_DB,
+    )
+
+    cursor = conn.cursor()
+
+    try:
+        # Read JSON file
+        json_file_path = "data/books_updated.json"
+
+        with open(json_file_path, "r", encoding="utf-8") as file:
+            books = json.load(file)
+
+        # Prepare insert query
+        insert_query = """
+            INSERT INTO authors (product_id, name)
+            VALUES (%s, %s)
+            ON DUPLICATE KEY UPDATE
+                name = VALUES(name)
+        """
+
+        inserted_count = 0
+        updated_count = 0
+        skipped_count = 0
+
+        # Insert authors for each book
+        for book in books:
+            try:
+                # Skip books with empty id
+                if not book.get("id"):
+                    skipped_count += 1
+                    continue
+
+                product_id = int(book["id"])
+                author_name = book.get("author_name")
+
+                # Skip if no author name
+                if not author_name or not author_name.strip():
+                    skipped_count += 1
+                    continue
+
+                # Handle multiple authors separated by comma
+                author_names = [name.strip() for name in author_name.split(",")]
+
+                for name in author_names:
+                    if name:  # Only insert non-empty names
+                        cursor.execute(insert_query, (product_id, name))
+
+                        if cursor.rowcount == 1:
+                            inserted_count += 1
+                        elif cursor.rowcount == 2:
+                            updated_count += 1
+
+            except (ValueError, KeyError) as e:
+                print(f"Warning: Skipping book {book.get('id', 'unknown')}: {e}")
+                skipped_count += 1
+                continue
+
+        # Commit the transaction
+        conn.commit()
+
+        print(f"✓ Successfully inserted {inserted_count} authors")
+        print(f"✓ Updated {updated_count} existing authors")
+        print(f"⊘ Skipped {skipped_count} invalid rows")
+        print(f"✓ Total processed: {inserted_count + updated_count}")
+
+    except FileNotFoundError:
+        print(f"Error: Could not find file '{json_file_path}'")
+    except mysql.connector.Error as err:
+        print(f"MySQL Error: {err}")
+        conn.rollback()
+    except Exception as e:
+        print(f"Error: {e}")
+        conn.rollback()
+    finally:
+        cursor.close()
+        conn.close()
+
+
 def insert_products():
     """Insert products and product_images data from JSON file into MySQL database"""
 
@@ -310,17 +397,24 @@ def insert_products():
 if __name__ == "__main__":
     import sys
 
-    if len(sys.argv) > 1 and sys.argv[1] == "products":
-        print("Starting products import...")
-        insert_products()
-        print("Products import completed!")
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "products":
+            print("Starting products import...")
+            insert_products()
+            print("Products import completed!")
+        elif sys.argv[1] == "authors":
+            print("Starting authors import...")
+            insert_authors()
+            print("Authors import completed!")
+        else:
+            print("Unknown command. Available commands:")
+            print("  python insert_data.py categories")
+            print("  python insert_data.py authors")
+            print("  python insert_data.py products")
     else:
         print("Starting categories import...")
         insert_categories()
         print("Categories import completed!")
 
-        print("\nTo import products, run: python insert_data.py products")
-
-    # print("Starting products import...")
-    # insert_products()
-    # print("Products import completed!")
+        print("\nTo import authors, run: python insert_data.py authors")
+        print("To import products, run: python insert_data.py products")

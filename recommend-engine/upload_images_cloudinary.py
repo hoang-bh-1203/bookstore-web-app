@@ -219,7 +219,7 @@ def main(input_file, output_file, workers=20):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Upload ảnh sách lên Cloudinary")
     parser.add_argument(
-        "--input", default="data/books_v2.json", help="File JSON đầu vào"
+        "--input", default="data/books_v3.json", help="File JSON đầu vào"
     )
     parser.add_argument(
         "--output", default="data/books_updated.json", help="File JSON kết quả"
