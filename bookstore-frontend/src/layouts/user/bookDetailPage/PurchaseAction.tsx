@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router';
 import { useModal } from '@/hooks/useModal.ts';
 import Counter from './Counter.tsx';
 import { useCart } from '@/hooks/useCart.ts';
-import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 
 interface PurchaseActionsProps {
@@ -67,24 +66,6 @@ export default function PurchaseActions({ book }: PurchaseActionsProps) {
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="hidden lg:flex items-center gap-2">
-          <img
-            src="/src/assets/tiki-logo.svg"
-            alt="ai"
-            style={{ width: 40, height: 40 }}
-          />
-          <div>
-            <div className="font-medium">BS Trading</div>
-            <img
-              src="/src/assets/offical.svg"
-              alt="ai"
-              style={{ height: 20 }}
-            />
-          </div>
-        </div>
-
-        <Separator className="my-4 hidden lg:flex" />
-
         <div className="flex gap-8 lg:flex-col lg:gap-4">
           <div className="flex flex-col gap-2">
             <p className="text-sm font-semibold mb-0">Số lượng</p>

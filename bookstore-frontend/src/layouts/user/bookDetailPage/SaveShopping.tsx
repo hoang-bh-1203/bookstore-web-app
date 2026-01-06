@@ -23,7 +23,7 @@ export default function SaveShopping() {
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger className="flex items-center justify-between cursor-pointer w-full">
         <div className="flex items-center gap-1.5">
-          <p className="font-semibold text-md">An tâm mua sắm</p>
+          <p className="font-semibold text-md px-3">An tâm mua sắm</p>
         </div>
         {open ? (
           <ChevronDown className="h-4 w-4" />
