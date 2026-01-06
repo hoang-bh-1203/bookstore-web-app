@@ -11,7 +11,7 @@ class Config:
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     # --- Model ---
-    MODEL_NAME = os.getenv("MODEL_NAME", "vinai/phobert-base-v2")
+    MODEL_NAME = os.getenv("MODEL_NAME", "VoVanPhuc/sup-SimCSE-VietNamese-phobert-base")
     CACHE_DIR = os.path.join(BASE_DIR, "cache")
     SEGMENTER_DIR = os.path.join(BASE_DIR, "vncorenlp")
     MAX_LEN = 160
@@ -20,7 +20,7 @@ class Config:
     MYSQL_PORT = int(os.getenv("MYSQL_PORT", 3306))
     MYSQL_USER = os.getenv("MYSQL_USER", "root")
     MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "root")
-    MYSQL_DB = os.getenv("MYSQL_DB", "bookstore")
+    MYSQL_DB = os.getenv("MYSQL_DB", "book_shop")
 
     # --- Vector Store Qdrant ---
     QDRANT_HOST = os.getenv("QDRANT_HOST", "localhost")

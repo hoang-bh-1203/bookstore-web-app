@@ -1,0 +1,512 @@
+id,name,parent_id
+1,"Sách tiếng Việt",NULL
+2,"Manga - Comic",1
+3,Manga,2
+4,"Manga Khác",3
+5,"Văn học",1
+6,"Light Novel",5
+7,"Truyện Trinh Thám - Kiếm Hiệp",5
+8,"Thơ ca, tục ngữ, ca dao, thành ngữ",5
+9,"Tâm lý - Kỹ năng sống",1
+10,"Kỹ năng sống",9
+11,"Sách học ngoại ngữ",1
+12,"Tiếng Hoa",11
+13,"Comic - Truyện Tranh",2
+14,"Truyện Tranh Nước Ngoài",13
+15,"Series Manga",3
+16,"Sách Ảnh",5
+17,"Truyện ngắn - Tản Văn",5
+18,"Khoa học kỹ thuật",1
+19,"Khoa học khác",18
+20,"Kinh Tế",1
+21,"Nhân vật - Bài Học Kinh doanh",20
+22,"Đam Mỹ",1
+23,"Sách Tô Màu Dành Cho Người Lớn",5
+24,"Thiếu nhi",1
+25,"Truyện Thiếu Nhi",24
+26,"Truyện Đọc Thiếu Nhi",25
+27,"Y học",18
+28,"Nuôi Dạy Con",1
+29,"Dành Cho Mẹ Bầu",28
+30,"Kế Toán - Kiểm Toán - Thuế",20
+31,"Tiểu thuyết",5
+32,"Tâm lý",9
+33,"Truyện Tranh Thiếu Nhi",25
+34,"Phân Tích Kinh Tế",20
+35,"Kiến Thức - Kỹ Năng Sống Cho Trẻ",24
+36,"Sách Tranh Kỹ Năng Sống Cho Trẻ",35
+37,"Huyền Bí - Giả Tưởng - Kinh Dị",5
+38,"Tin học",18
+39,"Lịch Sử - Địa Lý - Tôn Giáo",1
+40,"Tôn Giáo",39
+41,"Tiếng Anh",11
+42,"Luyện Thi Chứng Chỉ A,B,C",41
+43,"Kiến thức bách khoa",24
+44,"Bách Khoa Tri Thức - Câu Hỏi Vì Sao",43
+45,"Rèn luyện nhân cách",9
+46,"Tác Phẩm Kinh Điển",5
+47,"Khoa học vũ trụ",18
+48,"Giáo khoa - Tham khảo",1
+49,"Mẫu Giáo",48
+50,"Quản Trị - Lãnh Đạo",20
+51,"Truyện Tranh Việt Nam",13
+52,"Phương Pháp Giáo Dục Trẻ Các Nước",28
+53,"Từ Vựng",41
+54,"Đàm Thoại - Giao Tiếp",41
+55,"Sách Tham Khảo",48
+56,"Tham Khảo Lớp 10",55
+57,"Giáo trình",1
+58,"Giáo trình ĐH, CĐ, THCN",57
+59,"Ngôn Tình",5
+60,"Vừa Học Vừa Chơi Với Trẻ",35
+61,"Cẩm Nang Làm Cha Mẹ",28
+62,"Chứng Khoán - Bất Động Sản -  Đầu Tư ",20
+63,"Chính Trị - Pháp Lý - Triết Học",1
+64,"Triết Học- Lý Luận Chính Trị",63
+65,"Dinh Dưỡng  - Sức Khỏe Cho Trẻ",28
+66,"Luyện Thi IELTS ",41
+67,"Văn Hóa - Nghệ Thuật - Du Lịch",1
+68,"Ngữ Pháp",41
+69,"Tham Khảo Lớp 1",55
+70,"Kiến Thức  Khoa Học - Tự Nhiên",43
+71,"Sách cho tuổi mới lớn",9
+72,"Báo - Tạp Chí",1
+73,"Hỏi Đáp - Câu Đố - Trò Chơi",35
+74,"Câu Chuyện Danh Nhân Nổi Tiếng Thế Giới",43
+75,"Lịch Sử",39
+76,"Từ điển",1
+77,"Từ điển tiếng Anh-Anh, Anh-Việt, Việt Anh",76
+78,"Tham Khảo Lớp 12",55
+79,"Sách Tranh Kiến Thức Sống Cho Trẻ",35
+80,"Từ điển tiếng Việt",76
+81,"Âm Nhạc - Mỹ Thuật - Thời Trang",1
+82,"Âm Nhạc",81
+83,"Giáo Dục Trẻ Tuổi Teen",28
+84,"Tiếng Pháp",11
+85,"Tài Chính - Ngân Hàng",20
+86,"Tô màu, luyện chữ",24
+87,"Tiếng Anh Thiếu Nhi",41
+88,"Truyện Tranh Ehon Nhật Bản",25
+89,"Tiểu Sử Hồi Ký",1
+90,"Câu Chuyện Cuộc Đời",89
+91,"Tham Khảo Lớp 9",55
+92,"Nữ Công Gia Chánh",1
+93,"Làm Đẹp",92
+94,"Marketing - Bán Hàng",20
+95,"Mỹ Thuật",81
+96,"Du Ký",5
+97,"Tiếng Hàn",11
+98,"Thiết Kế - Kiến Trúc - Xây dựng",18
+99,"Luyện Thi TOEFL",41
+100,"Khởi Nghiệp - Làm Giàu",20
+101,"Nấu Ăn",92
+102,"Sách Giáo Khoa",48
+103,"Giáo Khoa Lớp 1",102
+104,"Tác giả - Tác Phẩm",5
+105,"Đội - Đoàn - Đảng",63
+106,"Nông, lâm, ngư nghiệp",18
+107,"Tham Khảo Lớp 6",55
+108,"Phong Thủy - Kinh Dịch",1
+109,"Tiếng Nhật",11
+110,"Thể Dục Thể thao - Giải Trí",1
+111,"Giáo Khoa Lớp 4",102
+112,"Luyện Thi TOEIC ",41
+113,"Phát Triển Kỹ Năng - Trí Tuệ Cho Trẻ",28
+114,"Điện, điện tử",18
+115,"Khéo Tay",92
+116,"Ngoại ngữ khác",11
+117,"Tham Khảo Lớp 7",55
+118,"Giáo Khoa Lớp 11",102
+119,"Luật - Văn Bản Dưới Luật ",63
+120,"Phóng Sự - Ký Sự - Phê Bình Văn Học",5
+121,"Tham Khảo Lớp 4",55
+122,"Tham Khảo Lớp 5",55
+123,"Toán Học",18
+124,"Tham Khảo Lớp 8",55
+125,"Tham Khảo Lớp 2",55
+126,"Tiếng Việt cho người nước ngoài",11
+127,"Nhân Vật và Sự kiện",63
+128,"Tham Khảo Lớp 3",55
+129,"Combo Văn Học",5
+130,"Giáo Khoa Lớp 7",102
+131,"Sách giáo viên",48
+132,"Món Ăn Bài Thuốc",92
+133,"Giáo Khoa Lớp 2",102
+134,"Nghệ Thuật - Giải Trí",89
+135,"Địa Lý",39
+136,"Giáo Khoa Lớp 8",102
+137,"Giáo Khoa Lớp 6",102
+138,"Giáo Khoa Lớp 3",102
+139,"Từ Điển Thiếu Nhi",24
+140,"Tiếng Đức",11
+141,"Giáo Dục",18
+142,"Chính Trị",89
+143,"Thủ Công - Tạo Hình",81
+144,"Thời Trang",81
+145,"Nhân Sự - Việc Làm ",20
+146,"Chicken Soup - Hạt Giống Tâm Hồn",9
+147,"Từ điển tiếng Pháp - Việt, Việt - Pháp",76
+148,"Giáo Khoa Lớp 12",102
+149,"Tham Khảo Lớp 11",55
+150,"Giáo Khoa Lớp 9",102
+151,"Flashcard  - Thẻ Học Thông Minh",24
+152,"Cơ khí",18
+153,"Hài Hước - Truyện Cười",5
+154,"Từ điển tiếng Đức - Việt, Việt - Đức",76
+155,"Thể loại khác",5
+156,"12 Cung Hoàng Đạo",5
+157,"Thể Thao",89
+158,"Giáo Khoa Lớp 10",102
+159,"Từ điển Hán - Việt",76
+160,"Luyện Nghe",41
+161,"Mẹo vặt - Cẩm nang ",92
+162,"Từ điển chuyên ngành",76
+163,Comic,13
+164,"Từ điển tiếng Nhật - Việt, Việt - Nhật",76
+165,"Đại học",48
+166,"Văn Kiện",63
+167,"Sách Nói",24
+168,"Truyện Tranh",5
+169,"Flashcard - Thẻ Học Tiếng Anh",41
+170,"Tuổi Teen",5
+171,"Từ Điển Khác",76
+172,"Từ điển tiếng Hàn - Việt, Việt - Hàn",76
+173,"Dạy nghề",57
+174,"Giáo Khoa Lớp 5",102
+175,"Môi trường, khoáng sản, hóa chất",18
+176,Flashcard,11
+177,"Foreign books",NULL
+178,"Dictionaries & Languages",177
+179,"ELT: Learning Material & Coursework",178
+180,"ELT Grammar & Vocabulary",179
+181,"Personal Development",177
+182,"Popular Psychology",181
+183,"Assertiveness, Motivation & Self-esteem",182
+184,Dictionaries,178
+185,Fiction,177
+186,Fantasy,185
+187,"ELT Examination Practice Tests",179
+188,"Mind, Body & Spirit",177
+189,"Mind, Body, Spirit: Thought & Practice",188
+190,Romance,185
+191,"ELT Workbooks, Practice Books & Exercises",179
+192,"Contemporary Fiction",185
+193,"Other languages",NULL
+194,"Japanese Books",177
+195,"Manga Books",194
+196,"Children's Books",177
+197,"Fiction For Teen",196
+198,"School Stories",197
+199,"Business, Finance & Management",177
+200,"Business & Management",199
+201,"Management & Management Techniques",200
+202,"ELT: Specific Skills",179
+203,"Usage & Grammar Guides",178
+204,"Picture & Activity Books",196
+205,"Picture Books",204
+206,"Science & Geography",177
+207,Chemistry,206
+208,"Physical Chemistry",207
+209,Non-Fiction,196
+210,"People & Places",209
+211,Biography,177
+212,Memoirs,211
+213,Crime,185
+214,"Activity Books",204
+215,"Society & Social Sciences",177
+216,Philosophy,215
+217,"Society & Culture: General",216
+218,"Art & Photography",177
+219,Architecture,218
+220,"Individual Architects & Architectural Firms",219
+221,"Animal Stories",197
+222,Classics,185
+223,Economics,199
+224,"Economic History",223
+225,Reference,196
+226,Encyclopedias,225
+227,Adventure,185
+228,"Adult & Contemporary Romance",190
+229,Thrillers,185
+230,"Advice On Careers & Achieving Success",181
+231,"Business Innovation",200
+232,Humour,197
+233,"Graphic Novels, Anime & Manga",185
+234,"Graphic Novels: Manga",233
+235,"Development Economics",223
+236,"Biography: General",211
+237,"Biography: Arts & Entertainment",236
+238,"Poetry & Drama",177
+239,"Society & Social Issues",196
+240,Multiculturalism,239
+241,"Early Learning",204
+242,"ELT Graded Readers",179
+243,Traditional,197
+244,"Science: General Issues",206
+245,"Philosophy Of Science",244
+246,"Business Ethics",200
+247,"Social Issues",239
+248,"Military Fiction",227
+249,Health,177
+250,"Coping With Personal Problems",249
+251,"Coping With Illness",250
+252,Religion,177
+253,Buddhism,252
+254,"Zen Buddhism",253
+255,Education,196
+256,"English Language",255
+257,"Behavioural Economics",223
+258,"Natural History",209
+259,"Biography: Royalty",236
+260,"General Reference",225
+261,"Historical Romance",190
+262,"Mind, Body, Spirit: Meditation & Visualisation",188
+263,"ELT: English For Specific Purposes",178
+264,"ELT: English For Academic Purposes",263
+265,"Graphic Novels",197
+266,"Technology & Engineering",177
+267,"Environmental Science, Engineering & Technology",266
+268,"Science Fiction",197
+269,"Language: Reference & General",178
+270,"Writing & Editing Guides",269
+271,"ELT Background & Reference Material",178
+272,"ELT Dictionaries & Reference",271
+273,"History & Archaeology",177
+274,"History: Earliest Times To Present Day",273
+275,"21st Century History: From C 2000 -",274
+276,Sciences,255
+277,"Business Negotiation",200
+278,"Language Teaching & Learning (other Than ELT)",178
+279,"Language Teaching & Learning Material & Coursework",278
+280,"Fiction: Special Features",185
+281,"Fiction In Translation",280
+282,Geography,255
+283,"ELT: Teaching Theory & Methods",271
+284,"Graphic Novels: Literary & Memoirs",233
+285,"Learning Japanese Books",194
+286,"Horror & Ghost",197
+287,"ELT Non-book Material & Resources",179
+288,"Advice On Parenting",249
+289,"Child Care & Upbringing",288
+290,Science,209
+291,"Art, Anime Character",194
+292,"Teaching Resources & Education",216
+293,"Technology: General Issues",266
+294,"Complementary Therapies, Healing & Health",188
+295,"Traditional Medicine & Herbal Remedies",294
+296,"Mysteries & The Supernatural (Children's-YA)",209
+297,"Biology, Life Sciences",206
+298,Horror,185
+299,"Historical Fiction",185
+300,"Education & Reference",177
+301,Schools,300
+302,"Primary & Middle Schools",301
+303,Physics,206
+304,Thesauri,178
+305,"Biography: Business & Industry",236
+306,History,209
+307,"Short Stories",197
+308,Macroeconomics,223
+309,"ELT: English For Business",263
+310,"German Books",177
+311,"Learning German Books",310
+312,"Graphic Novels: Superheroes",233
+313,"Higher & Further Education, Tertiary Education",300
+314,"Crafts And Hobbies",194
+315,"E-commerce: Business Aspects",200
+316,"Architecture & Photography",194
+317,"Fitness & Diet",249
+318,"Exercise & Workout Books",317
+319,"Hobbies & Games",209
+320,"Television & Film",209
+321,"Annuals, Anthologies & Poetry",196
+322,Poetry,321
+323,"Urban Economics",223
+324,Work,209
+325,"General Knowledge",209
+326,"Other Non-Christian Religions",252
+327,"Oriental Religions",326
+328,"Industry & Industrial Studies",199
+329,"Media, Information & Communication Industries",328
+330,"Advice On Education",181
+331,"Home & Garden",177
+332,"Style Guides",331
+333,"Cosmetics, Hair & Beauty",332
+334,Christianity,252
+335,"Christian Life & Practice",334
+336,"Finance & Accounting",199
+337,Accounting,336
+338,"Biography: Religious & Spiritual",236
+339,"Biography: Historical, Political & Military",236
+340,"Business Communication & Presentation",200
+341,"Buddhist Worship, Rites & Ceremonies",253
+342,"Sales & Marketing",200
+343,"History Of Science",244
+344,"Food & Drink",177
+345,"Preserving & Freezing",344
+346,Relationships,239
+347,Self-Esteem,239
+348,"Quick & Easy Cooking",344
+349,"Cookery By Ingredient",344
+350,Sport,177
+351,"Ball Games",350
+352,Baseball,351
+353,Language,194
+354,"Energy Technology & Engineering",266
+355,"Vintage Crime",213
+356,"Korean Books",177
+357,"Korean Literature",356
+358,"Cookery Dishes & Courses",344
+359,"Cakes, Baking, Icing & Sugarcraft",358
+360,Photography,218
+361,"Photographs: Collections",360
+362,"Language Learning: Specific Skills",278
+363,"Memory Improvement & Thinking Techniques",182
+364,"Industrial Chemistry & Manufacturing Technologies",266
+365,"Biography: Science, Technology & Engineering",236
+366,"Psychic Powers & Psychic Phenomena",188
+367,"Practical Interests",209
+368,"Domestic Animals & Pets",258
+369,"Dogs As Pets",368
+370,"Electronics & Communications Engineering",266
+371,"Electronics Engineering",370
+372,Family,197
+373,Entertainment,177
+374,"Films, Cinema",373
+375,"Film Guides & Reviews",374
+376,"Regional & National History",273
+377,"History Of The Americas",376
+378,Mathematics,206
+379,"Probability & Statistics",378
+380,"Earth Sciences, Geography, Environment, Planning",206
+381,Environment,380
+382,"Family Issues",239
+383,"Interdisciplinary Studies",215
+384,"Communication Studies",383
+385,"International Economics",223
+386,"Coping With Death & Bereavement",250
+387,"French books",193
+388,"Learning French Books",177
+389,"Ownership & Organization Of Enterprises",200
+390,"Health & Wholefood Cookery",344
+391,"Non - Fiction",194
+392,"Mathematics & Numeracy",255
+393,"Interior Design, Decor & Style Guides",332
+394,"True Stories",211
+395,"True Crime",394
+396,"Business Strategy",200
+397,Technology,255
+398,"Office & Workplace",200
+399,Linguistics,178
+400,"Historical & Comparative Linguistics",399
+401,"Culture & Travel",194
+402,Beverages,344
+403,"Non-alcoholic Beverages",402
+404,"Personal Finance",181
+405,"Children's Stationery",196
+406,"Plays, Playscripts",238
+407,"Shakespeare Plays",406
+408,"Transport Technology & Trades",266
+409,"Aerospace & Aviation Technology",408
+410,"Coping With Anxiety & Phobias",250
+411,"Politics & Government",216
+412,Stationery,194
+413,"Pregnancy, Birth & Baby Care",288
+414,"Religion & Beliefs",209
+415,Entrepreneurship,200
+416,"National & Regional Cuisine",344
+417,Medical,177
+418,"Clinical & Internal Medicine",417
+419,Dermatology,418
+420,"Sociology & Anthropology",216
+421,"Jokes & Humour",209
+422,"Needlework & Fabric Crafts",314
+423,"Cookery For Dietary Conditions",390
+424,Historical,197
+425,"Poetry By Individual Poets",322
+426,"Buddhist Life & Practice",253
+427,"Life Sciences: General Issues",297
+428,"Reading Books",177
+429,Art,209
+430,"Microbiology (non-medical)",297
+431,"Foreign Languages",300
+432,Law,199
+433,Jurisprudence,432
+434,"Health, Family & Lifestyle",194
+435,Desserts,358
+436,Psychology,216
+437,"Miscellaneous Items",412
+438,"General Cookery",344
+439,"Asian History",376
+440,"Literature: History & Criticism",238
+441,Atlases,225
+442,"Energy Industries & Utilities",328
+443,"Biography: Sport",236
+444,"Pre-School & Kindergarten",301
+445,"Astronomy, Space & Time",206
+446,"Cosmology & The Universe",445
+447,"International Business",200
+448,"ELT: English For Travel & Communications",263
+449,Medicine,417
+450,"Public Health & Preventive Medicine",449
+451,"Alternative Belief Systems",252
+452,"Eclectic & Esoteric Religions & Belief Systems",451
+453,"History: Specific Events & Topics",273
+454,"Genocide & Ethnic Cleansing",453
+455,Computing,177
+456,Databases,455
+457,"Data Capture & Analysis",456
+458,"Art & Design",255
+459,"Organizational Theory & Behaviour",200
+460,"Historical Crime",213
+461,"Diets & Dieting",317
+462,"Biography: Literary",236
+463,"Christian Spirituality & Religious Experience",334
+464,"Language Phrasebooks",178
+465,"Sports Stories",197
+466,"Laws Of Specific Jurisdictions",432
+467,"Bilingual & Multilingual Dictionaries",184
+468,"Digital Lifestyle",455
+469,"Internet Guides & Online Services",468
+470,"African History",376
+471,Finance,336
+472,"Earth: Natural History General",258
+473,"Labour Economics",223
+474,"Painting & Art Manuals",314
+475,Music,218
+476,"Industrial - Commercial Art & Design",218
+477,"Illustration & Commercial Art",476
+478,"Popular Medicine & Health",249
+479,"Encyclopaedias & Reference Works",225
+480,"Reference Works",479
+481,"Communications Engineering - Telecommunications",370
+482,"Toys: Making & Decorating",314
+483,"Political Economy",223
+484,"Other Branches Of Medicine",417
+485,"Therapy & Therapeutics",484
+486,"Teaching Of A Specific Subject",292
+487,"Computing: General",455
+488,"Ethical & Social Aspects Of Computing",487
+489,"Film Scripts & Screenplays",374
+490,"General & World History",273
+491,"Popular Science",244
+492,"Computer Programming - Software Development",455
+493,"Games Development & Programming",492
+494,"Political & Legal",229
+495,"Myth & Legend Told As Fiction",185
+496,"Service Industries",328
+497,"History Of Engineering & Technology",293
+498,General,197
+499,"Knitting & Crochet",422
+500,"Computer Science",455
+501,"Coping With Old Age",250
+502,"Family & Relationships",249
+503,"Dating, Relationships, Living Together & Marriage",502
+504,"Zoology & Animal Sciences",297
+505,Anthologies,321
+506,"Public Speaking Guides",178
+507,"Sản Phẩm Hội Sách",NULL
+508,"Cooking For-with Children",344
+509,"Travel & Holiday Guides",177
+510,Guidebooks,509
+511,"Hotel & Holiday Accommodation Guides",510
