@@ -20,7 +20,7 @@ import { adminDashboardLoader } from './loaders/adminDashboardLoader';
 
 // --- Lazy Imports (User) ---
 const HomePage = lazy(() => import('@/pages/user/HomePage'));
-
+const Products = lazy(() => import('@/pages/user/Products'));
 const ProductDetail = lazy(() => import('@/pages/user/BookDetail'));
 
 const AccountLayout = lazy(() => import('@/pages/user/Profile'));
@@ -65,6 +65,10 @@ const router = createBrowserRouter([
       {
         index: true,
         element: withSuspense(HomePage),
+      },
+      {
+        path: 'products',
+        element: withSuspense(Products),
       },
       {
         path: 'products/:id',
