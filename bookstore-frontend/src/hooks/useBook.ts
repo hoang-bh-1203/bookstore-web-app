@@ -36,6 +36,14 @@ export const useBook = () => {
     return response;
   }, []);
 
+  const getBooksByCategory = useCallback(async (categoryId: number, params?: PageableParams) => {
+    const response = await Request.get<PagedResponse<Book>>(
+      API_ENDPOINTS.GET_PRODUCTS_BY_CATEGORY(categoryId),
+      { params },
+    );
+    return response;
+  }, []);
+
   // const getTopSellingBooks = useCallback(async () => {
   //   const response = await Request.get<Book[]>(API_ENDPOINTS.BOOKS, {
   //     params: {
@@ -106,6 +114,7 @@ export const useBook = () => {
   return {
     getAllBooks,
     getBooksByPriceRange,
+    getBooksByCategory,
     getBookById,
     createBook,
     updateBook,

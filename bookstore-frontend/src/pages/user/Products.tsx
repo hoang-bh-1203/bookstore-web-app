@@ -213,7 +213,7 @@ export default function ProductsPage() {
   const pageSize = 20;
 
   // Get hooks
-  const { getAllBooks, getBooksByPriceRange } = useBook();
+  const { getAllBooks, getBooksByPriceRange, getBooksByCategory } = useBook();
   const { getAllCategoriesWithSub } = useCategory();
 
   // Fetch categories once on mount
@@ -247,48 +247,55 @@ export default function ProductsPage() {
           size: pageSize 
         };
 
+        // Tìm category object từ selectedCategory name
+        const selectedCategoryObj = categories.find(cat => cat.name === selectedCategory);
+        const hasCategoryFilter = selectedCategory && selectedCategory !== 'Tất cả' && selectedCategoryObj;
+
         // Kiểm tra xem có filter theo giá không (và khác mặc định)
         const hasPriceFilter = priceRange[0] !== 0 || priceRange[1] !== 1000000;
         const hasOtherFilters = 
           searchQuery.trim() || 
-          (selectedCategory && selectedCategory !== 'Tất cả') ||
           selectedRating > 0;
 
         let booksResponse;
 
+        // Add sort to params
+        if (sortBy && sortBy !== 'default') {
+          switch (sortBy) {
+            case 'price-asc':
+              params.sort = 'finalPrice,asc';
+              break;
+            case 'price-desc':
+              params.sort = 'finalPrice,desc';
+              break;
+            case 'rating-desc':
+              params.sort = 'ratingAvg,desc';
+              break;
+            case 'name-asc':
+              params.sort = 'name,asc';
+              break;
+          }
+        }
+
+        // Nếu có filter theo category (không có filter khác), dùng endpoint by-category
+        if (hasCategoryFilter && !hasPriceFilter && !hasOtherFilters) {
+          booksResponse = await getBooksByCategory(selectedCategoryObj.id, params);
+        } 
         // Nếu chỉ filter theo giá (không có filter khác), dùng endpoint by-price-range
-        if (hasPriceFilter && !hasOtherFilters) {
+        else if (hasPriceFilter && !hasCategoryFilter && !hasOtherFilters) {
           params.minPrice = priceRange[0];
           params.maxPrice = priceRange[1];
-          
-          // Add sort
-          if (sortBy && sortBy !== 'default') {
-            switch (sortBy) {
-              case 'price-asc':
-                params.sort = 'finalPrice,asc';
-                break;
-              case 'price-desc':
-                params.sort = 'finalPrice,desc';
-                break;
-              case 'rating-desc':
-                params.sort = 'ratingAvg,desc';
-                break;
-              case 'name-asc':
-                params.sort = 'name,asc';
-                break;
-            }
-          }
-
           booksResponse = await getBooksByPriceRange(params);
-        } else {
-          // Dùng endpoint /products với tất cả filters
+        } 
+        // Dùng endpoint /products với tất cả filters
+        else {
           // Add search keyword
           if (searchQuery.trim()) {
             params.keyword = searchQuery.trim();
           }
 
           // Add category filter
-          if (selectedCategory && selectedCategory !== 'Tất cả') {
+          if (hasCategoryFilter) {
             params.categoryName = selectedCategory;
           }
 
@@ -301,24 +308,6 @@ export default function ProductsPage() {
           // Add rating filter
           if (selectedRating > 0) {
             params.minRating = selectedRating;
-          }
-
-          // Add sort
-          if (sortBy && sortBy !== 'default') {
-            switch (sortBy) {
-              case 'price-asc':
-                params.sort = 'finalPrice,asc';
-                break;
-              case 'price-desc':
-                params.sort = 'finalPrice,desc';
-                break;
-              case 'rating-desc':
-                params.sort = 'ratingAvg,desc';
-                break;
-              case 'name-asc':
-                params.sort = 'name,asc';
-                break;
-            }
           }
 
           booksResponse = await getAllBooks(params);
@@ -336,11 +325,11 @@ export default function ProductsPage() {
     };
 
     fetchBooks();
-  }, [currentPage, selectedCategory, searchQuery, priceRange, selectedRating, sortBy, getAllBooks, getBooksByPriceRange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, selectedCategory, searchQuery, priceRange, selectedRating, sortBy]);
 
   // API đã xử lý filter và sort, không cần filter/sort ở client nữa
   const displayedProducts = books;
-
   const resetFilters = () => {
     setSelectedCategory('Tất cả');
     setSearchQuery('');
@@ -474,7 +463,7 @@ export default function ProductsPage() {
                             ...product,
                             title: product.name,
                             author: product.authors?.map(a => a.name).join(', ') || '',
-                            image: product.imageUrl
+                            image: product.images[0]?.imageUrl || ''
                           }} 
                         />
                       ))}
