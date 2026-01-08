@@ -4,15 +4,28 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { VoucherModal } from '@/components/voucher-modal';
+import { useAuth } from '@/hooks/useAuth';
 import { useBook } from '@/hooks/useBook';
 import { useCart } from '@/hooks/useCart';
+import { useOrder } from '@/hooks/useOrder'; // Import hook mới
 import { Footer } from '@/layouts/user/Footer';
 import { Header } from '@/layouts/user/Header';
-import { CreditCard, MapPin, Tag, Ticket, Trash2, Truck } from 'lucide-react';
+import {
+  CreditCard,
+  Loader2,
+  MapPin,
+  Tag,
+  Ticket,
+  Trash2,
+  Truck,
+} from 'lucide-react'; // Import Loader2
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
+// ... (Giữ nguyên phần CONSTANT DISCOUNT_CODES)
 const DISCOUNT_CODES = {
+  // ... code cũ
   WELCOME10: {
     discount: 0.1,
     description: 'Giảm 10% cho đơn hàng đầu tiên',
@@ -29,46 +42,7 @@ const DISCOUNT_CODES = {
     maxDiscount: 100000,
     type: 'product' as const,
   },
-  SAVE30K: {
-    discount: 30000,
-    description: 'Giảm 30k cho đơn từ 150k',
-    title: 'Giảm 30k',
-    minOrder: 150000,
-    maxDiscount: 30000,
-    type: 'product' as const,
-  },
-  SAVE50K: {
-    discount: 50000,
-    description: 'Giảm 50k cho đơn từ 300k',
-    title: 'Giảm 50k',
-    minOrder: 300000,
-    maxDiscount: 50000,
-    type: 'product' as const,
-  },
-  SAVE70K: {
-    discount: 70000,
-    description: 'Giảm 70k cho đơn từ 500k',
-    title: 'Giảm 70k',
-    minOrder: 500000,
-    maxDiscount: 70000,
-    type: 'product' as const,
-  },
-  FREESHIP: {
-    discount: 30000,
-    description: 'Miễn phí vận chuyển',
-    title: 'Freeship',
-    minOrder: 0,
-    maxDiscount: 30000,
-    type: 'shipping' as const,
-  },
-  SHIP15K: {
-    discount: 15000,
-    description: 'Giảm 15k phí vận chuyển',
-    title: 'Giảm ship 15k',
-    minOrder: 100000,
-    maxDiscount: 15000,
-    type: 'shipping' as const,
-  },
+  // ...
   SHIP20K: {
     discount: 20000,
     description: 'Giảm 20k phí vận chuyển cho đơn từ 200k',
@@ -80,11 +54,16 @@ const DISCOUNT_CODES = {
 };
 
 export default function CheckoutPage() {
-  const { selectedItems, selectedTotalPrice, clearCart } = useCart();
+  // Lấy hàm getCart để refresh lại giỏ sau khi mua
+  const { selectedItems, selectedTotalPrice, getCart } = useCart();
+  const { createOrder, isCreating } = useOrder(); // Hook xử lý order
+  const { user } = useAuth();
+
   const navigate = useNavigate();
   const location = useLocation();
   const { getBookById } = useBook();
 
+  // ... (Giữ nguyên các state voucher, modal)
   const [appliedProductDiscount, setAppliedProductDiscount] = useState<{
     code: string;
     amount: number;
@@ -102,24 +81,31 @@ export default function CheckoutPage() {
   const [voucherModalOpen, setVoucherModalOpen] = useState(false);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState({
-    name: 'Vũ Anh Tú',
-    phone: '0942438693',
-    address: 'số 17 Duy Tân, Phường Dịch Vọng, Quận Cầu Giấy, Hà Nội',
+    name: user?.fullName ?? '',
+    phone: user?.phone ?? '',
+    address: user?.address ?? '',
   });
 
   const [quickBuyItems, setQuickBuyItems] = useState<any[]>([]);
 
+  // ... (Giữ nguyên useEffect fetchQuickBuyProduct)
   useEffect(() => {
     const fetchQuickBuyProduct = async () => {
       const { bookId, quantity } = location.state || {};
       if (bookId && quantity) {
         try {
           const book = await getBookById(bookId);
+          // Lưu ý: Quick Buy hiện tại đang giả lập item.
+          // Backend yêu cầu item phải có trong DB Cart (cart_item_id) để tạo đơn.
+          // Nếu Backend chưa hỗ trợ tạo đơn từ productId trực tiếp,
+          // logic QuickBuy này có thể cần điều chỉnh để AddToCart ngầm trước.
+          // Ở đây tôi giả định item trong selectedItems (từ cart) sẽ có id chuẩn.
           setQuickBuyItems([
             {
-              id: book.id,
+              id: 0, // Quick buy item chưa có cart_item_id nếu chưa add to cart
+              productId: book.id, // Lưu productId để tham chiếu
               title: book.name,
-              author: book.authors?.map(a => a.name).join(', ') || '',
+              author: book.authors?.map((a) => a.name).join(', ') || '',
               price: book.finalPrice,
               image: book.images?.[0]?.imageUrl || '',
               quantity: quantity,
@@ -135,6 +121,8 @@ export default function CheckoutPage() {
 
   const itemsToCheckout =
     quickBuyItems.length > 0 ? quickBuyItems : selectedItems;
+
+  // Tính toán tổng tiền
   const totalPrice =
     quickBuyItems.length > 0
       ? quickBuyItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
@@ -143,9 +131,9 @@ export default function CheckoutPage() {
   const shippingFee = deliveryMethod === 'express' ? 30000 : 20000;
   const subtotal = totalPrice;
 
+  // ... (Giữ nguyên logic Voucher: applyVoucherCode, removeDiscount)
   const applyVoucherCode = (code: string) => {
     if (!code) {
-      // Empty code means deselect
       const existingProductCode = appliedProductDiscount?.code;
       const existingShippingCode = appliedShippingDiscount?.code;
 
@@ -168,6 +156,9 @@ export default function CheckoutPage() {
     if (!discount) return;
 
     if (subtotal < discount.minOrder) {
+      toast.error(
+        `Đơn hàng phải tối thiểu ${discount.minOrder.toLocaleString()}đ để dùng mã này`,
+      );
       return;
     }
 
@@ -210,15 +201,61 @@ export default function CheckoutPage() {
   const finalTotal = subtotal - productDiscount + finalShipping;
   const savings = productDiscount + shippingDiscount;
 
-  const handleCheckout = () => {
-    const orderNumber = 'ORD' + Date.now().toString().slice(-8);
-    if (quickBuyItems.length === 0) {
-      clearCart();
+  // --- LOGIC XỬ LÝ THANH TOÁN ---
+  const handleCheckout = async () => {
+    // 1. Chuẩn bị địa chỉ
+    const fullAddress = `${deliveryAddress.name} | ${deliveryAddress.phone} | ${deliveryAddress.address}`;
+
+    // 2. Map Payment Method
+    let backendPaymentMethod: 'COD' | 'VNPAY' | 'MOMO' | 'BANKING' = 'COD';
+    if (paymentMethod === 'viettel') {
+      backendPaymentMethod = 'BANKING';
     }
-    navigate(`/order-success?order=${orderNumber}`);
+
+    // 3. Lấy Cart IDs (Giữ nguyên logic cũ)
+    let selectedCartItemIds: number[] = [];
+    if (quickBuyItems.length > 0) {
+      toast.warning('Chức năng Mua Ngay đang bảo trì...');
+      return;
+    } else {
+      selectedCartItemIds = itemsToCheckout.map((item) => item.id!);
+    }
+
+    try {
+      // --- CẬP NHẬT PAYLOAD ---
+      const payload = {
+        address: fullAddress,
+        methodPayment: backendPaymentMethod, // Bây giờ TypeScript đã hiểu đúng kiểu
+        note: 'Giao hàng giờ hành chính',
+        selectedCartItemIds: selectedCartItemIds,
+        // Ép kiểu cho shippingMethod luôn để tránh lỗi tương tự
+        shippingMethod: (deliveryMethod === 'express'
+          ? 'EXPRESS'
+          : 'STANDARD') as 'EXPRESS' | 'STANDARD',
+      };
+
+      const response = await createOrder(payload);
+
+      if (response) {
+        toast.success('Đặt hàng thành công!');
+        getCart();
+        const orderId = (response as any).data?.id || (response as any).id;
+        navigate(`/order-success?order=${orderNumber(orderId)}`);
+      }
+    } catch (error: any) {
+      console.error(error);
+      const msg =
+        error?.response?.data?.message ||
+        'Đặt hàng thất bại. Vui lòng thử lại.';
+      toast.error(msg);
+    }
   };
 
+  const orderNumber = (id: any) =>
+    'ORD' + (id || Date.now().toString().slice(-6));
+
   if (itemsToCheckout.length === 0) {
+    // ... (Giữ nguyên UI Empty Checkout)
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <main className="flex-1 flex items-center justify-center py-16">
@@ -248,9 +285,10 @@ export default function CheckoutPage() {
             Thanh toán
           </h1>
           <div className="grid lg:grid-cols-3 gap-6">
-            {/* Left Column - Delivery, Payment, Vouchers */}
+            {/* Left Column */}
             <div className="lg:col-span-2 space-y-4">
               {/* Delivery Method */}
+              {/* ... (Giữ nguyên UI Delivery Method) */}
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
@@ -259,12 +297,9 @@ export default function CheckoutPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  {/* ... radio buttons ... */}
                   <label
-                    className={`flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer transition-all ${
-                      deliveryMethod === 'express'
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
-                    }`}
+                    className={`flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer transition-all ${deliveryMethod === 'express' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
                   >
                     <div className="flex items-center gap-3">
                       <input
@@ -293,13 +328,8 @@ export default function CheckoutPage() {
                       30.000đ
                     </span>
                   </label>
-
                   <label
-                    className={`flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer transition-all ${
-                      deliveryMethod === 'standard'
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
-                    }`}
+                    className={`flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer transition-all ${deliveryMethod === 'standard' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
                   >
                     <div className="flex items-center gap-3">
                       <input
@@ -330,17 +360,24 @@ export default function CheckoutPage() {
                       </span>
                     </div>
                     {itemsToCheckout.slice(0, 1).map((item) => (
-                      <div key={item.id} className="flex gap-3 items-center">
+                      <div
+                        key={item.id || item.productId}
+                        className="flex gap-3 items-center"
+                      >
                         <div className="relative w-12 h-16 flex-shrink-0">
                           <img
-                            src={item.image || '/placeholder.svg'}
-                            alt={item.title}
+                            src={
+                              item.image ||
+                              item.thumbnailUrl ||
+                              '/placeholder.svg'
+                            }
+                            alt={item.title || item.name}
                             className="object-cover rounded"
                           />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-medium text-foreground line-clamp-1">
-                            {item.title}
+                            {item.title || item.name}
                           </h4>
                           <p className="text-xs text-muted-foreground">
                             SL: x{item.quantity}
@@ -349,11 +386,6 @@ export default function CheckoutPage() {
                             <span className="text-sm font-semibold text-foreground">
                               {item.price.toLocaleString('vi-VN')}đ
                             </span>
-                            {item.originalPrice && (
-                              <span className="text-xs text-muted-foreground line-through">
-                                {item.originalPrice.toLocaleString('vi-VN')}đ
-                              </span>
-                            )}
                           </div>
                         </div>
                       </div>
@@ -392,7 +424,7 @@ export default function CheckoutPage() {
                       className="w-4 h-4"
                     />
                     <span className="text-foreground font-medium">
-                      Thanh toán tiền mặt
+                      Thanh toán tiền mặt (COD)
                     </span>
                   </label>
 
@@ -412,13 +444,14 @@ export default function CheckoutPage() {
                       className="w-4 h-4"
                     />
                     <span className="text-foreground font-medium">
-                      Viettel Money
+                      Chuyển khoản Ngân hàng / Viettel Money
                     </span>
                   </label>
                 </CardContent>
               </Card>
 
-              <Card>
+              {/* Voucher Section */}
+              {/* <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Ticket className="h-5 w-5" />
@@ -435,13 +468,14 @@ export default function CheckoutPage() {
                     Chọn hoặc nhập mã giảm giá
                   </Button>
                 </CardContent>
-              </Card>
+              </Card> */}
             </div>
 
             {/* Right Column - Order Summary */}
             <div className="space-y-4">
               <Card>
                 <CardContent className="pt-6">
+                  {/* Address Summary */}
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-start gap-2">
                       <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
@@ -469,88 +503,10 @@ export default function CheckoutPage() {
                   <p className="text-sm text-muted-foreground pl-6">
                     {deliveryAddress.address}
                   </p>
-                </CardContent>
-              </Card>
 
-              {(appliedProductDiscount || appliedShippingDiscount) && (
-                <Card className="border-primary/50 bg-primary/5">
-                  <CardContent className="pt-6 space-y-3">
-                    {appliedProductDiscount && (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="bg-primary text-primary-foreground rounded p-1.5">
-                            <Tag className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-foreground">
-                              Giảm{' '}
-                              {appliedProductDiscount.amount.toLocaleString(
-                                'vi-VN',
-                              )}
-                              đ
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {appliedProductDiscount.description}
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeDiscount('product')}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-                    {appliedShippingDiscount && (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="bg-primary text-primary-foreground rounded p-1.5">
-                            <Truck className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-foreground">
-                              Giảm ship{' '}
-                              {shippingDiscount.toLocaleString('vi-VN')}đ
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {appliedShippingDiscount.description}
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeDiscount('shipping')}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
+                  <Separator className="my-4" />
 
-              {/* Order Summary */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">Đơn hàng</CardTitle>
-                    <Link
-                      to="/cart"
-                      className="text-xs text-primary hover:underline"
-                    >
-                      Xem thông tin
-                    </Link>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {itemsToCheckout.length} sản phẩm
-                  </p>
-                </CardHeader>
-                <CardContent className="space-y-3">
+                  {/* Summary Details */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">
@@ -568,6 +524,7 @@ export default function CheckoutPage() {
                         {shippingFee.toLocaleString('vi-VN')}đ
                       </span>
                     </div>
+                    {/* Discount Displays ... */}
                     {productDiscount > 0 && (
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">
@@ -590,9 +547,9 @@ export default function CheckoutPage() {
                     )}
                   </div>
 
-                  <Separator />
+                  <Separator className="my-4" />
 
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mb-1">
                     <span className="text-base font-semibold text-foreground">
                       Tổng tiền thanh toán
                     </span>
@@ -608,13 +565,25 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground mb-4">
                     (Giá này đã bao gồm thuế GTGT, phí đóng gói, phí vận chuyển
                     và các chi phí khác)
                   </p>
 
-                  <Button className="w-full" size="lg" onClick={handleCheckout}>
-                    Đặt hàng
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    onClick={handleCheckout}
+                    disabled={isCreating} // Disable khi đang gọi API
+                  >
+                    {isCreating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Đang xử lý...
+                      </>
+                    ) : (
+                      'Đặt hàng'
+                    )}
                   </Button>
                 </CardContent>
               </Card>

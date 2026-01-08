@@ -50,35 +50,47 @@ const ModalDetailOrder: React.FC<OrderModalProps> = ({
   loading = false,
   onUpdate,
 }) => {
-  // FIX 1: Định nghĩa đúng kiểu cho state status dựa trên Interface Order
-  const [status, setStatus] = useState<Order['status'] | undefined>(undefined);
+  // State lưu trạng thái hiện tại đang chọn
+  const [currentStatus, setCurrentStatus] = useState<string | undefined>(
+    undefined,
+  );
   const { updateOrder } = useOrder();
 
+  // Reset status khi mở modal với order mới
   useEffect(() => {
     if (open && order) {
-      setStatus(order.status);
+      setCurrentStatus(order.status);
     }
   }, [order, open]);
 
   const handleUpdate = async () => {
-    if (!order || !status) return;
+    if (!order || !currentStatus) return;
+
+    // Kiểm tra nếu status không đổi thì không gọi API
+    if (currentStatus === order.status) {
+      onCancel();
+      return;
+    }
 
     try {
       await updateOrder(order.id, {
-        status, // Typescript sẽ hài lòng vì status đã đúng kiểu
+        status: currentStatus, // Gửi status string lên backend
       });
       toast.success('Cập nhật trạng thái thành công');
       onCancel();
-      onUpdate?.(); // Callback để refresh lại table bên ngoài
-    } catch (error) {
+      onUpdate?.(); // Refresh lại danh sách bên ngoài
+    } catch (error: any) {
       console.error(error);
-      toast.error('Có lỗi xảy ra khi cập nhật đơn hàng');
+      // Hiển thị lỗi chi tiết từ backend nếu có (ví dụ: validate luồng trạng thái)
+      const msg =
+        error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật đơn hàng';
+      toast.error(msg);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
-      <DialogContent className="sm:max-w-[800px]">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <AlertCircle className="h-5 w-5 text-orange-500" />
@@ -102,7 +114,6 @@ const ModalDetailOrder: React.FC<OrderModalProps> = ({
                 <Label className="text-muted-foreground">
                   Tổng tiền đơn hàng
                 </Label>
-                {/* FIX 2: Dùng totalAmount thay vì totalPrice */}
                 <p className="font-bold text-xl text-primary">
                   {order.totalAmount.toLocaleString()} đ
                 </p>
@@ -119,15 +130,15 @@ const ModalDetailOrder: React.FC<OrderModalProps> = ({
             <div className="space-y-2">
               <Label htmlFor="status">Trạng thái đơn hàng</Label>
               <Select
-                value={status}
-                // FIX: Ép kiểu value từ string về Order['status']
-                onValueChange={(val) => setStatus(val as Order['status'])}
+                // Quan trọng: value phải được bind với state
+                value={currentStatus}
+                onValueChange={(val) => setCurrentStatus(val)}
+                disabled={loading}
               >
                 <SelectTrigger id="status" className="w-[250px]">
                   <SelectValue placeholder="Chọn trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
-                  {/* FIX: Render status động từ Enum thay vì hardcode */}
                   {Object.entries(OrderStatus).map(([key, value]) => (
                     <SelectItem key={key} value={value}>
                       {OrderStatusLabel[key as keyof typeof OrderStatusLabel]}
@@ -135,6 +146,10 @@ const ModalDetailOrder: React.FC<OrderModalProps> = ({
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                * Lưu ý: Trạng thái phải tuân thủ quy trình (Ví dụ: PENDING
+                -&gt; CONFIRMED -&gt; PROCESSING...)
+              </p>
             </div>
 
             {/* Danh sách sản phẩm */}
@@ -154,11 +169,9 @@ const ModalDetailOrder: React.FC<OrderModalProps> = ({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {/* FIX 3: Dùng items thay vì products */}
                     {order.items.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell className="font-medium">
-                          {/* FIX 4: Dùng productName thay vì name */}
                           {item.productName}
                         </TableCell>
                         <TableCell className="text-center">
@@ -168,10 +181,9 @@ const ModalDetailOrder: React.FC<OrderModalProps> = ({
                           {item.productPrice.toLocaleString()} đ
                         </TableCell>
                         <TableCell className="text-right text-red-500">
-                          -{item.productDiscount.toLocaleString()} đ
+                          -{item.productDiscount?.toLocaleString() || 0} %
                         </TableCell>
                         <TableCell className="text-right font-semibold">
-                          {/* Backend đã tính sẵn field total cho từng item */}
                           {item.total.toLocaleString()} đ
                         </TableCell>
                       </TableRow>

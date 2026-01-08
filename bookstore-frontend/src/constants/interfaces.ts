@@ -107,6 +107,22 @@ export interface OrderItem {
   total: number;
 }
 
+export interface CreateOrderRequest {
+  address: string;
+  methodPayment: 'COD' | 'VNPAY' | 'MOMO' | 'BANKING';
+  note?: string;
+  selectedCartItemIds?: number[];
+}
+
+export interface OrderResponse {
+  id: number;
+  customerId: number;
+  customerName: string;
+  totalAmount: number;
+  status: string;
+  paymentStatus: string;
+}
+
 export interface Order {
   id: number;
   customerId: number;
