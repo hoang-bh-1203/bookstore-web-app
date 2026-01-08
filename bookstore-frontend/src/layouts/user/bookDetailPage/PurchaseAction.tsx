@@ -20,47 +20,58 @@ export default function PurchaseActions({ book }: PurchaseActionsProps) {
   const totalPrice = book ? book.price * quantity : 0;
   const navigate = useNavigate();
   const { openLoginModal } = useModal();
-  const { addToCart, cartItems } = useCart();
+  const { addToCart, cartItems, isAuthenticated } = useCart();
+
+  const checkAuth = () => {
+    if (!isAuthenticated) {
+      toast.warning('Vui lòng đăng nhập để mua hàng');
+      openLoginModal();
+      return false;
+    }
+    return true;
+  };
 
   const onClickBuyNow = () => {
-    if (!addToCart) {
-      openLoginModal();
-      return;
-    }
+    // 2. Kiểm tra Auth khi bấm nút
+    if (!checkAuth()) return;
 
+    if (!book?.id) return;
+
+    // Chuyển sang trang confirm (Check lại xem trang confirm có cần logic add to cart trước không)
     navigate('/confirm', {
-      state: { bookId: book?.id, quantity: quantity },
+      state: {
+        selectedCartItems: [
+          {
+            productId: book.id,
+            name: book.name,
+            price: book.price,
+            quantity: quantity,
+            thumbnailUrl: book.images?.[0]?.imageUrl,
+          },
+        ],
+      },
     });
   };
 
-  const onClickAddToCart = () => {
-    if (!addToCart) {
-      openLoginModal();
-      return;
-    }
+  const onClickAddToCart = async () => {
+    // 3. Kiểm tra Auth khi bấm nút
+    if (!checkAuth()) return;
 
     if (!book?.id) return;
-    const exists = cartItems.some((item) => item.productId === book.id);
 
+    // Kiểm tra trùng lặp (Optional: Backend thường xử lý cộng dồn, nhưng check ở FE cũng tốt cho UX)
+    const exists = cartItems.some((item) => item.productId === book.id);
     if (exists) {
-      // 3. Gọi toast.error()
       toast.error('Sản phẩm này đã có trong giỏ hàng!');
       return;
     }
 
-    const success = addToCart({
+    // 4. Gọi addToCart theo cấu trúc mới của useCart hook
+    // (Hook mới đã tự xử lý toast success/error và loading)
+    await addToCart({
       productId: book.id,
-      name: book.name,
-      thumbnailUrl: book.images[0].imageUrl,
-      price: book.price,
-      originalPrice: book.originalPrice,
       quantity: quantity,
     });
-
-    if (success) {
-      // 4. Gọi toast.success()
-      toast.success('Thêm sản phẩm vào giỏ hàng thành công');
-    }
   };
 
   return (
