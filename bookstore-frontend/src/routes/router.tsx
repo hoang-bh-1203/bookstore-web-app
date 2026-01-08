@@ -17,6 +17,7 @@ import {
 } from './loaders/orderLoader';
 import { categoryLoader } from './loaders/categoryLoader';
 import { adminDashboardLoader } from './loaders/adminDashboardLoader';
+import OAuth2Callback from '@/pages/OAuth2Callback';
 
 // --- Lazy Imports (User) ---
 const HomePage = lazy(() => import('@/pages/user/HomePage'));
@@ -187,6 +188,10 @@ const router = createBrowserRouter([
   {
     path: '/403',
     element: <Error403 />,
+  },
+  {
+    path: '/auth/callback',
+    element: <OAuth2Callback />,
   },
 ]);
 
