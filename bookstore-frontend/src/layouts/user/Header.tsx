@@ -13,11 +13,13 @@ export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { totalItems } = useCart();
+  const { totalItems, resetCart } = useCart();
   const { isAuthenticated, user, logout } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const handleLogout = async () => {
+    resetCart();
+
     await logout();
     navigate('/');
   };

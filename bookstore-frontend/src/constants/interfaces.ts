@@ -211,6 +211,37 @@ export interface FeaturedCollectionData {
   rating: number;
 }
 
+export interface CartItemResponse {
+  id: number; // Đây là cart_item_id (Dùng để PUT/DELETE)
+  productId: number;
+  productName: string;
+  productPrice: number;
+  productDiscount: number;
+  quantity: number;
+  total: number;
+  productImage?: string;
+}
+
+// Interface dùng trong Frontend (Store)
+export interface CartItem {
+  id?: number; // Thêm field này để map với cart_item_id
+  productId: number;
+  name: string;
+  thumbnailUrl: string;
+  price: number;
+  originalPrice?: number;
+  quantity: number;
+  selected?: boolean; // Field này chỉ tồn tại ở Frontend
+}
+
+export interface CartResponse {
+  id: number;
+  customerId: number;
+  items: CartItemResponse[];
+  total: number;
+  totalItems: number;
+}
+
 export interface PageableParams {
   page?: number;
   size?: number;

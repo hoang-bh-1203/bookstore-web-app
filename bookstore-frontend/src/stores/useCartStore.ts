@@ -1,126 +1,75 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
-import type { CartItem, CreateOrderResponse } from '@/constants/interfaces';
-import { formattedPrice } from '@/utils/priceHelper';
-import { randomDeliveryDate } from '@/utils/dateHelper';
+import type { CartItem } from '@/constants/interfaces';
 
 interface CartState {
   items: CartItem[];
-  recentOrder: {
-    totalAmount: string;
-    orderId: number;
-    productId: number;
-    productName: string;
-    thumbnailUrl: string;
-    deliveryDate: string;
-  } | null;
+  isLoading: boolean;
 }
 
 interface CartActions {
-  addToCart: (item: CartItem) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (payload: { id: number; quantity: number }) => void;
-
-  // --- NEW: Selection Actions ---
+  setCart: (items: CartItem[]) => void;
+  setLoading: (loading: boolean) => void;
+  // Các action UI update (Optimistic update)
+  updateItemQuantityLocal: (productId: number, quantity: number) => void;
+  removeItemLocal: (productId: number) => void;
   toggleItemSelection: (productId: number) => void;
   toggleAllSelection: () => void;
-
-  clearCart: () => void;
-  setRecentOrder: (order: CreateOrderResponse) => void;
-  clearRecentOrder: () => void;
+  clearCartLocal: () => void;
 }
 
-const initialState: CartState = {
-  items: [],
-  recentOrder: null,
-};
-
 export const useCartStore = create<CartState & CartActions>()(
-  persist(
-    immer((set) => ({
-      ...initialState,
+  immer((set) => ({
+    items: [],
+    isLoading: false,
 
-      addToCart: (newItem) =>
-        set((state) => {
+    setLoading: (loading) => set({ isLoading: loading }),
+
+    // Action này dùng để sync data từ Backend vào Store
+    setCart: (newItems) =>
+      set((state) => {
+        // Giữ lại trạng thái selected của user nếu item đã tồn tại
+        const mergedItems = newItems.map((newItem) => {
           const existingItem = state.items.find(
-            (item: any) => item.productId === newItem.productId,
+            (i) => i.productId === newItem.productId,
           );
-          if (existingItem) {
-            existingItem.quantity += newItem.quantity;
-            // Tùy chọn: Khi thêm lại sản phẩm đã có, có muốn tự động select nó không?
-            // existingItem.selected = true;
-          } else {
-            // Mặc định khi thêm mới là selected = true
-            state.items.push({ ...newItem, selected: true });
-          }
-        }),
-
-      removeFromCart: (productId) =>
-        set((state) => {
-          state.items = state.items.filter(
-            (item: any) => item.productId !== productId,
-          );
-        }),
-
-      updateQuantity: (payload) =>
-        set((state) => {
-          const item = state.items.find((i: any) => i.productId === payload.id);
-          if (item) {
-            item.quantity = payload.quantity;
-          }
-        }),
-
-      // --- NEW: Logic Toggle 1 Item ---
-      toggleItemSelection: (productId) =>
-        set((state) => {
-          const item = state.items.find((i: any) => i.productId === productId);
-          if (item) {
-            item.selected = !item.selected;
-          }
-        }),
-
-      // --- NEW: Logic Toggle All ---
-      toggleAllSelection: () =>
-        set((state) => {
-          // Kiểm tra xem tất cả có đang được chọn không (bỏ qua giỏ hàng rỗng)
-          const allCurrentlySelected =
-            state.items.length > 0 && state.items.every((i: any) => i.selected);
-
-          // Nếu tất cả đang chọn -> bỏ chọn tất cả. Ngược lại -> chọn tất cả
-          state.items.forEach((i: any) => {
-            i.selected = !allCurrentlySelected;
-          });
-        }),
-
-      clearCart: () =>
-        set((state) => {
-          state.items = [];
-        }),
-
-      setRecentOrder: (payload) =>
-        set((state) => {
-          if (!payload || !payload.orderId) return;
-          const price = formattedPrice(payload.totalAmount);
-          state.recentOrder = {
-            totalAmount: price,
-            orderId: payload.orderId,
-            productId: payload.products?.[0]?.productId,
-            productName: payload.products?.[0]?.productName,
-            thumbnailUrl: payload.products?.[0]?.thumbnailUrl,
-            deliveryDate: randomDeliveryDate(),
+          return {
+            ...newItem,
+            selected: existingItem ? existingItem.selected : true, // Mặc định chọn nếu mới
           };
-        }),
+        });
+        state.items = mergedItems;
+      }),
 
-      clearRecentOrder: () =>
-        set((state) => {
-          state.recentOrder = null;
-        }),
-    })),
-    {
-      name: 'cart-storage',
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ items: state.items }),
-    },
-  ),
+    updateItemQuantityLocal: (productId, quantity) =>
+      set((state) => {
+        const item = state.items.find((i) => i.productId === productId);
+        if (item) item.quantity = quantity;
+      }),
+
+    removeItemLocal: (productId) =>
+      set((state) => {
+        state.items = state.items.filter((i) => i.productId !== productId);
+      }),
+
+    clearCartLocal: () =>
+      set((state) => {
+        state.items = [];
+      }),
+
+    toggleItemSelection: (productId) =>
+      set((state) => {
+        const item = state.items.find((i) => i.productId === productId);
+        if (item) item.selected = !item.selected;
+      }),
+
+    toggleAllSelection: () =>
+      set((state) => {
+        const allSelected =
+          state.items.length > 0 && state.items.every((i) => i.selected);
+        state.items.forEach((i) => {
+          i.selected = !allSelected;
+        });
+      }),
+  })),
 );
