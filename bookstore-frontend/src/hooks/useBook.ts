@@ -5,7 +5,7 @@ import type {
   PageableParams,
   PagedResponse,
 } from '@/constants/interfaces';
-import { useRef, useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 /**
  * Global cache to persist book data across component re-renders
@@ -23,6 +23,14 @@ export const useBook = () => {
   const getAllBooks = useCallback(async (params?: PageableParams) => {
     const response = await Request.get<PagedResponse<Book>>(
       API_ENDPOINTS.BOOKS,
+      { params },
+    );
+    return response;
+  }, []);
+
+  const getBooksByPriceRange = useCallback(async (params?: PageableParams) => {
+    const response = await Request.get<PagedResponse<Book>>(
+      API_ENDPOINTS.BOOKS_BY_PRICE_RANGE,
       { params },
     );
     return response;
@@ -97,6 +105,7 @@ export const useBook = () => {
 
   return {
     getAllBooks,
+    getBooksByPriceRange,
     getBookById,
     createBook,
     updateBook,

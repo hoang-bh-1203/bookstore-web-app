@@ -15,6 +15,7 @@ export const API_ENDPOINTS = {
   // Book API endpoints
   BOOKS: '/products',
   BOOK_BY_ID: (id: number) => `/products/${id}`,
+  BOOKS_BY_PRICE_RANGE: '/products/by-price-range',
 
   // Product API endpoints
   PRODUCTS: '/products',
@@ -29,7 +30,7 @@ export const API_ENDPOINTS = {
   CATEGORY_BY_ID: (id: number) => `/categories/${id}`,
   GET_CATEGORY_WITH_THUMBNAIL: 'categories/root-with-thumbnail',
   GET_CATEGORIES_WITH_SUBCATEGORIES: 'categories/with-subcategories',
-  CATEGORIES_WITH_SUB: '/categories/with-subcategories',
+  CATEGORIES_WITH_SUB: '/categories/children/1',
   // Order API endpoints
   ORDERS: '/orders',
   ORDERS_STAT: '/orders/stats',

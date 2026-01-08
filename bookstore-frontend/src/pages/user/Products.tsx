@@ -1,16 +1,6 @@
 import { ProductCard } from '@/components/product-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, X } from 'lucide-react';
-import { useState } from 'react';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import { SlidersHorizontal } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -18,101 +8,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-const categories = [
-  'Tất cả',
-  'Văn học',
-  'Kinh tế',
-  'Tâm lý',
-  'Kỹ năng',
-  'Thiếu nhi',
-  'Triết học',
-];
-
-const products = [
-  {
-    id: 1,
-    title: 'Nghệ Thuật Tinh Tế Của Việc Đếch Quan Tâm',
-    author: 'Mark Manson',
-    price: 89000,
-    originalPrice: 120000,
-    image: '/book-cover-art-philosophy.jpg',
-    category: 'Tâm lý',
-    rating: 4.8,
-  },
-  {
-    id: 2,
-    title: 'Sapiens: Lược Sử Loài Người',
-    author: 'Yuval Noah Harari',
-    price: 189000,
-    originalPrice: 250000,
-    image: '/book-cover-history.jpg',
-    category: 'Lịch sử',
-    rating: 4.9,
-  },
-  {
-    id: 3,
-    title: 'Đắc Nhân Tâm',
-    author: 'Dale Carnegie',
-    price: 79000,
-    originalPrice: 100000,
-    image: '/book-cover-psychology.jpg',
-    category: 'Kỹ năng',
-    rating: 4.7,
-  },
-  {
-    id: 4,
-    title: 'Nhà Giả Kim',
-    author: 'Paulo Coelho',
-    price: 69000,
-    originalPrice: 95000,
-    image: '/book-cover-fiction.jpg',
-    category: 'Văn học',
-    rating: 4.6,
-  },
-  {
-    id: 5,
-    title: 'Tuổi Trẻ Đáng Giá Bao Nhiêu',
-    author: 'Rosie Nguyễn',
-    price: 85000,
-    originalPrice: 110000,
-    image: '/book-cover-youth.jpg',
-    category: 'Kỹ năng',
-    rating: 4.5,
-  },
-  {
-    id: 6,
-    title: 'Tư Duy Nhanh Và Chậm',
-    author: 'Daniel Kahneman',
-    price: 159000,
-    originalPrice: 200000,
-    image: '/book-cover-thinking.jpg',
-    category: 'Tâm lý',
-    rating: 4.8,
-  },
-  {
-    id: 7,
-    title: 'Atomic Habits',
-    author: 'James Clear',
-    price: 129000,
-    originalPrice: 165000,
-    image: '/book-cover-habits.jpg',
-    category: 'Kỹ năng',
-    rating: 4.9,
-  },
-  {
-    id: 8,
-    title: 'Cà Phê Cùng Tony',
-    author: 'Tony Buổi Sáng',
-    price: 75000,
-    originalPrice: 95000,
-    image: '/book-cover-coffee.jpg',
-    category: 'Kỹ năng',
-    rating: 4.4,
-  },
-];
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import type { Book, Category } from '@/constants/interfaces';
+import { useBook } from '@/hooks/useBook';
+import { useCategory } from '@/hooks/useCategory';
+import { ChevronDown, ChevronUp, Search, SlidersHorizontal, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface FilterSidebarProps {
+  categories: Category[];
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   selectedCategory: string;
@@ -125,6 +35,7 @@ interface FilterSidebarProps {
 }
 
 const FilterSidebar = ({
+  categories,
   searchQuery,
   setSearchQuery,
   selectedCategory,
@@ -134,7 +45,15 @@ const FilterSidebar = ({
   selectedRating,
   setSelectedRating,
   resetFilters,
-}: FilterSidebarProps) => (
+}: FilterSidebarProps) => {
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  const INITIAL_CATEGORY_COUNT = 5;
+  
+  const displayedCategories = showAllCategories 
+    ? categories 
+    : categories.slice(0, INITIAL_CATEGORY_COUNT);
+  
+  return (
   <div className="space-y-6">
     {/* Search */}
     <div>
@@ -156,47 +75,75 @@ const FilterSidebar = ({
     <div>
       <h3 className="font-semibold text-foreground mb-3">Danh mục</h3>
       <div className="space-y-2">
-        {categories.map((category) => (
+        <button
+          onClick={() => setSelectedCategory('Tất cả')}
+          className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+            selectedCategory === 'Tất cả'
+              ? 'bg-primary text-primary-foreground'
+              : 'hover:bg-muted text-foreground'
+          }`}
+        >
+          Tất cả
+        </button>
+        {displayedCategories.map((category) => (
           <button
-            key={category}
-            onClick={() => setSelectedCategory(category)}
+            key={category.id}
+            onClick={() => setSelectedCategory(category.name)}
             className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-              selectedCategory === category
+              selectedCategory === category.name
                 ? 'bg-primary text-primary-foreground'
                 : 'hover:bg-muted text-foreground'
             }`}
           >
-            {category}
+            {category.name}
           </button>
         ))}
+        
+        {categories.length > INITIAL_CATEGORY_COUNT && (
+          <button
+            onClick={() => setShowAllCategories(!showAllCategories)}
+            className="w-full text-left px-3 py-2 text-primary hover:bg-muted rounded-md transition-colors flex items-center gap-2"
+          >
+            {showAllCategories ? (
+              <>
+                <ChevronUp className="h-4 w-4" />
+                Ẩn bớt
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4" />
+                Xem thêm ({categories.length - INITIAL_CATEGORY_COUNT})
+              </>
+            )}
+          </button>
+        )}
       </div>
     </div>
 
     {/* Price Range */}
     <div>
       <h3 className="font-semibold text-foreground mb-3">Khoảng giá</h3>
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Input
-            type="number"
-            placeholder="Từ"
-            value={priceRange[0]}
-            onChange={(e) =>
-              setPriceRange([Number(e.target.value), priceRange[1]])
-            }
-            className="w-full"
-          />
-          <span className="text-muted-foreground">-</span>
-          <Input
-            type="number"
-            placeholder="Đến"
-            value={priceRange[1]}
-            onChange={(e) =>
-              setPriceRange([priceRange[0], Number(e.target.value)])
-            }
-            className="w-full"
-          />
-        </div>
+      <div className="space-y-2">
+        {[
+          { label: 'Tất cả', min: 0, max: 1000000 },
+          { label: 'Dưới 50.000đ', min: 0, max: 50000 },
+          { label: '50.000đ - 100.000đ', min: 50000, max: 100000 },
+          { label: '100.000đ - 200.000đ', min: 100000, max: 200000 },
+          { label: '200.000đ - 500.000đ', min: 200000, max: 500000 },
+          { label: 'Trên 500.000đ', min: 500000, max: 1000000 },
+        ].map((range) => (
+          <button
+            key={range.label}
+            onClick={() => setPriceRange([range.min, range.max])}
+            className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+              priceRange[0] === range.min && priceRange[1] === range.max
+                ? 'bg-primary text-primary-foreground'
+                : 'hover:bg-muted text-foreground'
+            }`}
+          >
+            {range.label}
+          </button>
+        ))}
       </div>
     </div>
 
@@ -228,61 +175,188 @@ const FilterSidebar = ({
     </div>
 
     {/* Clear Filters */}
-    <Button
-      variant="outline"
-      className="w-full bg-transparent"
-      onClick={resetFilters}
-    >
-      <X className="h-4 w-4 mr-2" />
-      Xóa bộ lọc
-    </Button>
+    {(selectedCategory !== 'Tất cả' || 
+      searchQuery.trim() !== '' || 
+      priceRange[0] !== 0 || 
+      priceRange[1] !== 1000000 || 
+      selectedRating !== 0 ) && (
+      <Button
+        variant="outline"
+        className="w-full bg-transparent"
+        onClick={resetFilters}
+      >
+        <X className="h-4 w-4 mr-2" />
+        Xóa bộ lọc
+      </Button>
+    )}
   </div>
 );
+};
 
 export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 300000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const [selectedRating, setSelectedRating] = useState<number>(0);
   const [sortBy, setSortBy] = useState('default');
+  
+  // State for API data
+  const [books, setBooks] = useState<Book[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const pageSize = 20;
 
-  const filteredProducts = products.filter((product) => {
-    const matchesCategory =
-      selectedCategory === 'Tất cả' || product.category === selectedCategory;
-    const matchesSearch =
-      product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.author.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesPrice =
-      product.price >= priceRange[0] && product.price <= priceRange[1];
-    const matchesRating =
-      selectedRating === 0 || product.rating >= selectedRating;
-    return matchesCategory && matchesSearch && matchesPrice && matchesRating;
-  });
+  // Get hooks
+  const { getAllBooks, getBooksByPriceRange } = useBook();
+  const { getAllCategoriesWithSub } = useCategory();
 
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    switch (sortBy) {
-      case 'price-asc':
-        return a.price - b.price;
-      case 'price-desc':
-        return b.price - a.price;
-      case 'rating-desc':
-        return (b.rating || 0) - (a.rating || 0);
-      case 'name-asc':
-        return a.title.localeCompare(b.title, 'vi');
-      default:
-        return 0;
-    }
-  });
+  // Fetch categories once on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const categoriesResponse = await getAllCategoriesWithSub(); 
+        setCategories(categoriesResponse || []);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+    fetchCategories();
+  }, [getAllCategoriesWithSub]);
+
+  // Reset page to 0 when filters change
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [selectedCategory, searchQuery, priceRange, selectedRating, sortBy]);
+
+  // Fetch books whenever page or filters change
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Build filter params
+        const params: any = { 
+          page: currentPage, 
+          size: pageSize 
+        };
+
+        // Kiểm tra xem có filter theo giá không (và khác mặc định)
+        const hasPriceFilter = priceRange[0] !== 0 || priceRange[1] !== 1000000;
+        const hasOtherFilters = 
+          searchQuery.trim() || 
+          (selectedCategory && selectedCategory !== 'Tất cả') ||
+          selectedRating > 0;
+
+        let booksResponse;
+
+        // Nếu chỉ filter theo giá (không có filter khác), dùng endpoint by-price-range
+        if (hasPriceFilter && !hasOtherFilters) {
+          params.minPrice = priceRange[0];
+          params.maxPrice = priceRange[1];
+          
+          // Add sort
+          if (sortBy && sortBy !== 'default') {
+            switch (sortBy) {
+              case 'price-asc':
+                params.sort = 'finalPrice,asc';
+                break;
+              case 'price-desc':
+                params.sort = 'finalPrice,desc';
+                break;
+              case 'rating-desc':
+                params.sort = 'ratingAvg,desc';
+                break;
+              case 'name-asc':
+                params.sort = 'name,asc';
+                break;
+            }
+          }
+
+          booksResponse = await getBooksByPriceRange(params);
+        } else {
+          // Dùng endpoint /products với tất cả filters
+          // Add search keyword
+          if (searchQuery.trim()) {
+            params.keyword = searchQuery.trim();
+          }
+
+          // Add category filter
+          if (selectedCategory && selectedCategory !== 'Tất cả') {
+            params.categoryName = selectedCategory;
+          }
+
+          // Add price range filter
+          if (hasPriceFilter) {
+            params.minPrice = priceRange[0];
+            params.maxPrice = priceRange[1];
+          }
+
+          // Add rating filter
+          if (selectedRating > 0) {
+            params.minRating = selectedRating;
+          }
+
+          // Add sort
+          if (sortBy && sortBy !== 'default') {
+            switch (sortBy) {
+              case 'price-asc':
+                params.sort = 'finalPrice,asc';
+                break;
+              case 'price-desc':
+                params.sort = 'finalPrice,desc';
+                break;
+              case 'rating-desc':
+                params.sort = 'ratingAvg,desc';
+                break;
+              case 'name-asc':
+                params.sort = 'name,asc';
+                break;
+            }
+          }
+
+          booksResponse = await getAllBooks(params);
+        }
+
+        setBooks(booksResponse.data || []);
+        setTotalPages(booksResponse.totalPages || 0);
+        setTotalElements(booksResponse.totalElements || 0);
+      } catch (err) {
+        console.error('Error fetching books:', err);
+        setError('Không thể tải dữ liệu. Vui lòng thử lại sau.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
+  }, [currentPage, selectedCategory, searchQuery, priceRange, selectedRating, sortBy, getAllBooks, getBooksByPriceRange]);
+
+  // API đã xử lý filter và sort, không cần filter/sort ở client nữa
+  const displayedProducts = books;
 
   const resetFilters = () => {
     setSelectedCategory('Tất cả');
     setSearchQuery('');
-    setPriceRange([0, 300000]);
+    setPriceRange([0, 1000000]);
     setSelectedRating(0);
     setSortBy('default');
+    setCurrentPage(0);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const sidebarProps = {
+    categories,
     searchQuery,
     setSearchQuery,
     selectedCategory,
@@ -310,10 +384,35 @@ export default function ProductsPage() {
 
               {/* Main Content */}
               <div className="flex-1">
-                {/* Mobile Filter Button and Results */}
-                <div className="flex items-center justify-between mb-6 gap-4">
+                {/* Loading State */}
+                {loading && (
+                  <div className="text-center py-16">
+                    <p className="text-lg text-muted-foreground">
+                      Đang tải dữ liệu...
+                    </p>
+                  </div>
+                )}
+
+                {/* Error State */}
+                {error && (
+                  <div className="text-center py-16">
+                    <p className="text-lg text-destructive">{error}</p>
+                    <Button
+                      onClick={() => window.location.reload()}
+                      className="mt-4"
+                    >
+                      Thử lại
+                    </Button>
+                  </div>
+                )}
+
+                {/* Content */}
+                {!loading && !error && (
+                  <>
+                    {/* Mobile Filter Button and Results */}
+                    <div className="flex items-center justify-between mb-6 gap-4">
                   <p className="text-sm text-muted-foreground">
-                    Hiển thị {sortedProducts.length} sản phẩm
+                    Hiển thị {displayedProducts.length} / {totalElements} sản phẩm
                   </p>
 
                   <div className="flex items-center gap-3">
@@ -365,18 +464,94 @@ export default function ProductsPage() {
                 </div>
 
                 {/* Products Grid */}
-                {sortedProducts.length > 0 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-                    {sortedProducts.map((product) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </div>
+                {displayedProducts.length > 0 ? (
+                  <>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+                      {displayedProducts.map((product) => (
+                        <ProductCard 
+                          key={product.id} 
+                          product={{
+                            ...product,
+                            title: product.name,
+                            author: product.authors?.map(a => a.name).join(', ') || '',
+                            image: product.imageUrl
+                          }} 
+                        />
+                      ))}
+                    </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-center gap-2 mt-8">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 0}
+                        >
+                          Trước
+                        </Button>
+                        
+                        <div className="flex gap-1">
+                          {Array.from({ length: totalPages }, (_, i) => i).map((page) => {
+                            // Hiển thị: trang đầu, trang cuối, trang hiện tại và 2 trang xung quanh
+                            const showPage =
+                              page === 0 ||
+                              page === totalPages - 1 ||
+                              (page >= currentPage - 2 && page <= currentPage + 2);
+
+                            if (!showPage) {
+                              // Hiển thị dấu "..." nếu có khoảng cách
+                              if (
+                                page === currentPage - 3 ||
+                                page === currentPage + 3
+                              ) {
+                                return (
+                                  <span key={page} className="px-2 text-muted-foreground">
+                                    ...
+                                  </span>
+                                );
+                              }
+                              return null;
+                            }
+
+                            return (
+                              <Button
+                                key={page}
+                                variant={currentPage === page ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => handlePageChange(page)}
+                                className="min-w-[40px]"
+                              >
+                                {page + 1}
+                              </Button>
+                            );
+                          })}
+                        </div>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages - 1}
+                        >
+                          Sau
+                        </Button>
+                        
+                        <span className="text-sm text-muted-foreground ml-4">
+                          Trang {currentPage + 1} / {totalPages} ({totalElements} sản phẩm)
+                        </span>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="text-center py-16">
                     <p className="text-lg text-muted-foreground">
                       Không tìm thấy sản phẩm nào
                     </p>
                   </div>
+                )}
+                  </>
                 )}
               </div>
             </div>
