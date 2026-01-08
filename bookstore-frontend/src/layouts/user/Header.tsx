@@ -2,7 +2,7 @@
 
 import { ShoppingCart, Menu, Search, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/auth-modal';
@@ -11,6 +11,7 @@ import logo from '@/assets/logo.png';
 
 export function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const { totalItems } = useCart();
   const { isAuthenticated, user, logout } = useAuth();
@@ -18,6 +19,7 @@ export function Header() {
 
   const handleLogout = async () => {
     await logout();
+    navigate('/');
   };
 
   const getLinkClass = (path: string) => {
