@@ -23,7 +23,7 @@ const CartPage = () => {
     toggleAllSelection,
     selectedTotalPrice, // Tổng tiền của các item được chọn
     allSelected, // Trạng thái checkbox "Chọn tất cả"
-    validateCart,
+    // validateCart,
     isAuthenticated,
   } = useCart();
 

@@ -49,4 +49,7 @@ export const API_ENDPOINTS = {
 
   // Cart
   VALIDATE_CART: 'carts/validate',
+  CART: '/cart',
+  CART_ITEMS: '/cart/items',
+  CART_ITEM_BY_ID: (id: number) => `/cart/items/${id}`,
 };
