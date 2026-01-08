@@ -15,7 +15,7 @@ export function FlashSaleSection() {
         const response = await getAllBooks({
           page: 0,
           size: 5,
-          sort: 'discount,desc'
+          sort: 'discount,desc',
         });
         setProducts(response.data || []);
       } catch (error) {
@@ -53,44 +53,42 @@ export function FlashSaleSection() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {products.map((product) => {
-            const discountPercentage = product.price > 0 
-              ? Math.round((product.discount / product.price) * 100)
-              : 0;
-            
+            const discountPercentage = product.price > 0 ? product.discount : 0;
+
             return (
-            <Link
-              key={product.id}
-              to={`/products/${product.id}`}
-              className="bg-white rounded-lg overflow-hidden hover:shadow-lg transition"
-            >
-              <div className="relative">
-                <img
-                  src={product.images[0]?.imageUrl || '/placeholder.svg'}
-                  alt={product.name}
-                  className="w-full h-40 object-cover"
-                />
-                {product.discount > 0 && (
-                  <span className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-bold">
-                    -{discountPercentage}%
-                  </span>
-                )}
-              </div>
-              <div className="p-3">
-                <h3 className="font-bold text-sm mb-2 line-clamp-2">
-                  {product.name}
-                </h3>
-                <div className="flex items-center gap-2">
-                  <p className="text-red-600 font-bold">
-                    {product.finalPrice.toLocaleString('vi-VN')}đ
-                  </p>
+              <Link
+                key={product.id}
+                to={`/products/${product.id}`}
+                className="bg-white rounded-lg overflow-hidden hover:shadow-lg transition"
+              >
+                <div className="relative">
+                  <img
+                    src={product.images[0]?.imageUrl || '/placeholder.svg'}
+                    alt={product.name}
+                    className="w-full h-40 object-cover"
+                  />
                   {product.discount > 0 && (
-                    <p className="text-gray-400 text-xs line-through">
-                      {product.price.toLocaleString('vi-VN')}đ
-                    </p>
+                    <span className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-bold">
+                      -{discountPercentage}%
+                    </span>
                   )}
                 </div>
-              </div>
-            </Link>
+                <div className="p-3">
+                  <h3 className="font-bold text-sm mb-2 line-clamp-2">
+                    {product.name}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <p className="text-red-600 font-bold">
+                      {product.finalPrice.toLocaleString('vi-VN')}đ
+                    </p>
+                    {product.discount > 0 && (
+                      <p className="text-gray-400 text-xs line-through">
+                        {product.price.toLocaleString('vi-VN')}đ
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </Link>
             );
           })}
         </div>
