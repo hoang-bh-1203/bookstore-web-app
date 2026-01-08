@@ -1,27 +1,28 @@
-import { lazy, Suspense, type JSX } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
 import LoadingOverlay from '@/components/wrapper/loading-overlay';
-import UserLayout from '@/layouts/user/UserLayout';
-import AdminLayout from '@/layouts/admin/AdminLayout';
 import RequireRoleWrapper from '@/components/wrapper/require-role-wrapper';
+import AdminLayout from '@/layouts/admin/AdminLayout';
+import UserLayout from '@/layouts/user/UserLayout';
 import Error403 from '@/pages/403';
 import Error404 from '@/pages/404';
+import { lazy, Suspense, type JSX } from 'react';
+import { createBrowserRouter } from 'react-router-dom';
 
 // --- Loaders ---
-import { userLoader } from './loaders/userLoader';
+import OAuth2Callback from '@/pages/OAuth2Callback';
 import { bookLoader } from '@/routes/loaders/bookLoader.tsx';
+import { adminDashboardLoader } from './loaders/adminDashboardLoader';
+import { categoryLoader } from './loaders/categoryLoader';
 import {
   myOrderLoader,
   orderDetailLoader,
   orderLoader,
 } from './loaders/orderLoader';
-import { categoryLoader } from './loaders/categoryLoader';
-import { adminDashboardLoader } from './loaders/adminDashboardLoader';
-import OAuth2Callback from '@/pages/OAuth2Callback';
+import { userLoader } from './loaders/userLoader';
 
 // --- Lazy Imports (User) ---
 const HomePage = lazy(() => import('@/pages/user/HomePage'));
 const Products = lazy(() => import('@/pages/user/Products'));
+const CategoryProducts = lazy(() => import('@/pages/user/CategoryProducts'));
 const ProductDetail = lazy(() => import('@/pages/user/BookDetail'));
 const ResetPasswordPage = lazy(() => import('@/pages/user/ResetPasswordPage'));
 
@@ -71,6 +72,10 @@ const router = createBrowserRouter([
       {
         path: 'products',
         element: withSuspense(Products),
+      },
+      {
+        path: 'category-products',
+        element: withSuspense(CategoryProducts),
       },
       {
         path: 'products/:id',
