@@ -2,6 +2,7 @@ import CustomBreadcrumb from '@/components/common/breadcrumb';
 import { Card, CardContent } from '@/components/ui/card';
 import type { Book } from '@/constants/interfaces';
 import { useBook } from '@/hooks/useBook.ts';
+import { useCart } from '@/hooks/useCart';
 import BookDescription from '@/layouts/user/bookDetailPage/BookDescription';
 import BookImageGallery from '@/layouts/user/bookDetailPage/BookImageGallery';
 import BookInfo from '@/layouts/user/bookDetailPage/BookInfo';
@@ -24,8 +25,8 @@ export default function BookDetail() {
     if (isNaN(bookId)) return;
     (async () => {
       try {
-        const data = await getBookById(bookId);    
-        setBook(data);  
+        const data = await getBookById(bookId);
+        setBook(data);
       } catch (error) {
         console.error('Error fetching book:', error);
       }
