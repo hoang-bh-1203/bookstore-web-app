@@ -1,9 +1,10 @@
 'use client';
 
-import { ShoppingCart, Menu, Search } from 'lucide-react';
+import { ShoppingCart, Menu, Search, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '@/hooks/useCart';
+import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/auth-modal';
 import { useState } from 'react';
 import logo from '@/assets/logo.png';
@@ -12,7 +13,12 @@ export function Header() {
   const location = useLocation();
 
   const { totalItems } = useCart();
+  const { isAuthenticated, user, logout } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   const getLinkClass = (path: string) => {
     const baseClass =
@@ -68,12 +74,37 @@ export function Header() {
                   <span className="sr-only">Giỏ hàng</span>
                 </Button>
               </Link>
-              <Button
-                onClick={() => setAuthModalOpen(true)}
-                className="hidden sm:inline-flex bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Đăng nhập
-              </Button>
+              {isAuthenticated ? (
+                <div className="hidden sm:flex items-center gap-2">
+                  <Link to="/account">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <User className="h-4 w-4" />
+                      <span className="max-w-[100px] truncate">
+                        {user?.fullName || user?.email}
+                      </span>
+                    </Button>
+                  </Link>
+                  <Button
+                    onClick={handleLogout}
+                    variant="outline"
+                    size="icon"
+                    title="Đăng xuất"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => setAuthModalOpen(true)}
+                  className="hidden sm:inline-flex bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Đăng nhập
+                </Button>
+              )}
               <Button variant="ghost" size="icon" className="md:hidden">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Menu</span>

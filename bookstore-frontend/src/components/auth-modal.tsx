@@ -10,6 +10,9 @@ import {
 } from '@/components/ui/dialog';
 import { useState } from 'react';
 import { ArrowLeft, Mail } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { useNavigate } from 'react-router';
 
 interface AuthModalProps {
   open: boolean;
@@ -20,18 +23,119 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login, register, forgotPassword, error, clearError } = useAuth();
+  const navigate = useNavigate();
 
-  const handleForgotPassword = (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('[v0] Sending password reset email to:', email);
-    alert(`Link khôi phục mật khẩu đã được gửi đến ${email}`);
-    setIsForgotPassword(false);
-    setEmail('');
+    setIsSubmitting(true);
+    clearError();
+
+    try {
+      const success = await forgotPassword(email);
+      if (success) {
+        alert(`Link khôi phục mật khẩu đã được gửi đến ${email}`);
+        setIsForgotPassword(false);
+        setEmail('');
+      }
+    } catch (error) {
+      console.error('Forgot password failed:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBackToLogin = () => {
     setIsForgotPassword(false);
     setEmail('');
+    clearError();
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    clearError();
+
+    try {
+      const success = await login(email, password);
+      if (success) {
+        // Close modal and reset form on successful login
+        onOpenChange(false);
+        setEmail('');
+        setPassword('');
+
+        // Check user role and redirect accordingly
+        const currentUser = useAuthStore.getState().user;
+        if (currentUser?.role === 'ROLE_ADMIN') {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    clearError();
+
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      alert('Mật khẩu không khớp!');
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const success = await register(email, name, password);
+      if (success) {
+        // Check if user is now authenticated (auto-login)
+        const isNowAuthenticated = useAuthStore.getState().accessToken !== null;
+
+        if (isNowAuthenticated) {
+          // Auto-logged in, close modal and navigate
+          onOpenChange(false);
+          setEmail('');
+          setPassword('');
+          setName('');
+          setConfirmPassword('');
+          navigate('/');
+        } else {
+          // Registration successful but need to login
+          alert('Đăng ký thành công! Vui lòng đăng nhập.');
+          setIsLogin(true);
+          setPassword('');
+          setConfirmPassword('');
+          setName('');
+        }
+      }
+    } catch (error) {
+      console.error('Registration failed:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const resetForm = () => {
+    setEmail('');
+    setPassword('');
+    setName('');
+    setConfirmPassword('');
+    clearError();
+  };
+
+  const handleSwitchMode = () => {
+    setIsLogin(!isLogin);
+    resetForm();
   };
 
   return (
@@ -56,6 +160,11 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
         {isForgotPassword ? (
           <form onSubmit={handleForgotPassword} className="space-y-4 mt-4">
+            {error && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                {error}
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="forgot-email">Email</Label>
               <div className="relative">
@@ -75,8 +184,9 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
             <Button
               type="submit"
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              disabled={isSubmitting}
             >
-              Quên mật khẩu
+              {isSubmitting ? 'Đang gửi...' : 'Gửi link khôi phục'}
             </Button>
 
             <Button
@@ -91,7 +201,15 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
           </form>
         ) : (
           <>
-            <form className="space-y-4 mt-4">
+            {error && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                {error}
+              </div>
+            )}
+            <form
+              className="space-y-4 mt-4"
+              onSubmit={isLogin ? handleLogin : handleRegister}
+            >
               {!isLogin && (
                 <div className="space-y-2">
                   <Label htmlFor="name">Họ và tên</Label>
@@ -99,6 +217,8 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     id="name"
                     type="text"
                     placeholder="Nguyễn Văn A"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     required
                   />
                 </div>
@@ -110,6 +230,8 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                   id="email"
                   type="email"
                   placeholder="email@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -120,6 +242,8 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                   id="password"
                   type="password"
                   placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
@@ -131,6 +255,8 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     id="confirm-password"
                     type="password"
                     placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                   />
                 </div>
@@ -139,8 +265,13 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               <Button
                 type="submit"
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                disabled={isSubmitting}
               >
-                {isLogin ? 'Đăng nhập' : 'Đăng ký'}
+                {isSubmitting
+                  ? 'Đang xử lý...'
+                  : isLogin
+                    ? 'Đăng nhập'
+                    : 'Đăng ký'}
               </Button>
             </form>
 
@@ -201,7 +332,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               {isLogin ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}{' '}
               <button
                 type="button"
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={handleSwitchMode}
                 className="text-secondary font-medium hover:underline cursor-pointer"
               >
                 {isLogin ? 'Đăng ký ngay' : 'Đăng nhập'}

@@ -30,9 +30,9 @@ const Profile = () => {
   }, [location.pathname]);
 
   const menuItems = [
-    { icon: User, label: 'Thông tin tài khoản', href: '/profile/account-info' },
-    { icon: Bell, label: 'Thông báo của tôi', href: '/profile/notifications' },
-    { icon: FileText, label: 'Quản lý đơn hàng', href: '/profile/orders' },
+    { icon: User, label: 'Thông tin tài khoản', href: '/account/info' },
+    { icon: Bell, label: 'Thông báo của tôi', href: '/account/notifications' },
+    { icon: FileText, label: 'Quản lý đơn hàng', href: '/account/orders' },
   ];
 
   const SidebarContent = () => (

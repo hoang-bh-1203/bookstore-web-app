@@ -21,9 +21,16 @@ apiClient.interceptors.request.use(
 
     const isPublicEndpoint =
       config.url?.includes('/auth/login') ||
-      config.url?.includes('/auth/refresh');
+      config.url?.includes('/auth/register') ||
+      config.url?.includes('/auth/refresh') ||
+      config.url?.includes('/auth/forgot-password');
 
     if (accessToken && !isPublicEndpoint) {
+      console.log(
+        'Adding token to request:',
+        config.url,
+        accessToken?.substring(0, 20) + '...',
+      );
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
@@ -41,7 +48,8 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 500 && !originalRequest._retry) {
+    // Handle 401 Unauthorized errors by refreshing token
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {

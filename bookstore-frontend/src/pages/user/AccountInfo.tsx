@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useUser } from '@/hooks/useUser';
+import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 import {
@@ -44,8 +45,7 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 const AccountInfo = () => {
-  const userJson = localStorage.getItem('user');
-  const userData = userJson ? JSON.parse(userJson) : null;
+  const { user: userData } = useAuth(); // Get user from auth store
   const setUser = useAuthStore((state) => state.setUser);
   const { updateUser } = useUser();
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -63,6 +63,11 @@ const AccountInfo = () => {
 
   useEffect(() => {
     if (userData) {
+      console.log('AccountInfo user data:', {
+        email: userData.email,
+        role: userData.role,
+        fullName: userData.fullName,
+      });
       form.reset({
         fullName: userData.fullName || '',
         email: userData.email || '',
@@ -71,9 +76,14 @@ const AccountInfo = () => {
         avatarUrl: userData.avatarUrl ? [userData.avatarUrl] : [],
       });
     }
-  }, []); // Run once on mount based on localStorage data
+  }, [userData, form]); // Re-run when userData changes
 
   const onSubmit = async (values: ProfileFormValues) => {
+    if (!userData?.id) {
+      toast.error('Không tìm thấy thông tin người dùng!');
+      return;
+    }
+
     try {
       const payload = {
         fullName: values.fullName,

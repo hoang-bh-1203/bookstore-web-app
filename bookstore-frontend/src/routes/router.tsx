@@ -22,6 +22,7 @@ import { adminDashboardLoader } from './loaders/adminDashboardLoader';
 const HomePage = lazy(() => import('@/pages/user/HomePage'));
 const Products = lazy(() => import('@/pages/user/Products'));
 const ProductDetail = lazy(() => import('@/pages/user/BookDetail'));
+const ResetPasswordPage = lazy(() => import('@/pages/user/ResetPasswordPage'));
 
 const AccountLayout = lazy(() => import('@/pages/user/Profile'));
 const AccountInfo = lazy(() => import('@/pages/user/AccountInfo'));
@@ -124,6 +125,11 @@ const router = createBrowserRouter([
   {
     path: '/confirm',
     element: withSuspense(PaymentConfirm),
+  },
+
+  {
+    path: '/reset-password',
+    element: withSuspense(ResetPasswordPage),
   },
 
   // --- ADMIN ROUTES ---
