@@ -42,7 +42,7 @@ export function ProductCard({ product }: ProductCardProps) {
     : 0;
 
   return (
-    <Card className="group overflow-hidden border-border hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
+    <Card className="group overflow-hidden border-border hover:shadow-lg transition-shadow duration-300 flex flex-col h-full py-0">
       <Link to={`/products/${product.id}`} className="block">
         <div className="relative aspect-[3/4] overflow-hidden bg-muted">
           <img

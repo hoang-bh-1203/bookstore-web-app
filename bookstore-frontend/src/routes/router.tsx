@@ -33,7 +33,7 @@ const OrderDetail = lazy(() => import('@/pages/user/OrderDetail'));
 // Cart & Checkout & Order Success
 const Cart = lazy(() => import('@/pages/user/CartPage'));
 // const Checkout = lazy(() => import('@/pages/user/Checkout'));
-// const OrderSuccess = lazy(() => import('@/pages/user/OrderSuccess'));
+const OrderSuccess = lazy(() => import('@/pages/user/OrderSuccess'));
 const PaymentConfirm = lazy(() => import('@/pages/user/PaymentConfirm'));
 
 // --- Lazy Imports (Admin) ---
@@ -87,10 +87,10 @@ const router = createBrowserRouter([
       //     </RequireRoleWrapper>
       //   ),
       // },
-      // {
-      //   path: 'order-success',
-      //   element: withSuspense(OrderSuccess),
-      // },
+      {
+        path: 'order-success',
+        element: withSuspense(OrderSuccess),
+      },
       {
         path: 'account',
         element: withSuspense(AccountLayout),
