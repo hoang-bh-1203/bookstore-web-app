@@ -129,12 +129,18 @@ export interface Order {
   customerName: string;
   customerEmail: string;
   address: string;
-  status: 'PENDING' | 'CONFIRMED' | 'DELIVERED' | 'COMPLETED' | 'CANCELLED'; // Enum status
+  status:
+    | 'PENDING'
+    | 'CONFIRMED'
+    | 'DELIVERED'
+    | 'PROCESSING'
+    | 'SHIPPING'
+    | 'CANCELLED';
   methodPayment: string;
   paymentStatus: string;
-  totalAmount: number; // Backend trả về totalAmount, không phải totalPrice
+  totalAmount: number;
   totalItem: number;
-  items: OrderItem[];
+  items: any[];
   createdAt: string;
   updatedAt: string;
 }
@@ -264,6 +270,23 @@ export interface PageableParams {
   sort?: string;
   keyword?: string;
   status?: string;
+}
+
+export interface ApiResponse<T> {
+  statusCode: number;
+  message: string;
+  data: PagedData<T>;
+}
+
+export interface PagedData<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
 }
 
 export interface CartItem {

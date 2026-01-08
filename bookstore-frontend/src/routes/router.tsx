@@ -28,7 +28,6 @@ const ResetPasswordPage = lazy(() => import('@/pages/user/ResetPasswordPage'));
 
 const AccountLayout = lazy(() => import('@/pages/user/Profile'));
 const AccountInfo = lazy(() => import('@/pages/user/AccountInfo'));
-const Notifications = lazy(() => import('@/pages/user/Notifications'));
 const MyOrders = lazy(() => import('@/pages/user/MyOrders'));
 const OrderDetail = lazy(() => import('@/pages/user/OrderDetail'));
 
@@ -108,10 +107,6 @@ const router = createBrowserRouter([
           {
             path: 'info',
             element: withSuspense(AccountInfo),
-          },
-          {
-            path: 'notifications',
-            element: withSuspense(Notifications),
           },
           {
             path: 'orders',

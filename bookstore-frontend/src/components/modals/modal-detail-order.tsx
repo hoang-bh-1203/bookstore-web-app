@@ -24,7 +24,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, XCircle } from 'lucide-react'; // Thêm icon XCircle cho nút hủy
 import { toast } from 'sonner';
 import type { Order } from '@/constants/interfaces';
 import { useOrder } from '@/hooks/useOrder';
@@ -39,6 +39,7 @@ interface OrderModalProps {
   onUpdate?: () => void;
   cancelText?: string;
   loading?: boolean;
+  readOnly?: boolean; // Prop quan trọng để phân biệt User/Admin
 }
 
 const ModalDetailOrder: React.FC<OrderModalProps> = ({
@@ -49,12 +50,15 @@ const ModalDetailOrder: React.FC<OrderModalProps> = ({
   cancelText = 'Đóng',
   loading = false,
   onUpdate,
+  readOnly = false,
 }) => {
-  // State lưu trạng thái hiện tại đang chọn
+  // State lưu trạng thái hiện tại đang chọn (cho Admin)
   const [currentStatus, setCurrentStatus] = useState<string | undefined>(
     undefined,
   );
-  const { updateOrder } = useOrder();
+
+  // Lấy các hàm và state từ hook useOrder
+  const { updateOrder, cancelOrder, isCancelling } = useOrder();
 
   // Reset status khi mở modal với order mới
   useEffect(() => {
@@ -63,10 +67,10 @@ const ModalDetailOrder: React.FC<OrderModalProps> = ({
     }
   }, [order, open]);
 
+  // Xử lý cập nhật trạng thái (Dành cho Admin)
   const handleUpdate = async () => {
     if (!order || !currentStatus) return;
 
-    // Kiểm tra nếu status không đổi thì không gọi API
     if (currentStatus === order.status) {
       onCancel();
       return;
@@ -74,19 +78,49 @@ const ModalDetailOrder: React.FC<OrderModalProps> = ({
 
     try {
       await updateOrder(order.id, {
-        status: currentStatus, // Gửi status string lên backend
+        status: currentStatus,
       });
       toast.success('Cập nhật trạng thái thành công');
       onCancel();
-      onUpdate?.(); // Refresh lại danh sách bên ngoài
+      onUpdate?.();
     } catch (error: any) {
       console.error(error);
-      // Hiển thị lỗi chi tiết từ backend nếu có (ví dụ: validate luồng trạng thái)
       const msg =
         error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật đơn hàng';
       toast.error(msg);
     }
   };
+
+  // Xử lý hủy đơn hàng (Dành cho User)
+  const handleCancelOrder = async () => {
+    if (!order) return;
+
+    // Xác nhận trước khi hủy
+    if (
+      !confirm(
+        'Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.',
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await cancelOrder(order.id);
+      toast.success('Đã hủy đơn hàng thành công');
+      onCancel();
+      onUpdate?.(); // Refresh lại danh sách bên ngoài
+    } catch (error: any) {
+      console.error(error);
+      const msg = error?.response?.data?.message || 'Không thể hủy đơn hàng';
+      toast.error(msg);
+    }
+  };
+
+  // Logic kiểm tra điều kiện hiển thị nút hủy cho User
+  const canCancel =
+    order &&
+    (order.status === OrderStatus.PENDING ||
+      order.status === OrderStatus.CONFIRMED);
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
@@ -126,30 +160,46 @@ const ModalDetailOrder: React.FC<OrderModalProps> = ({
               </div>
             </div>
 
-            {/* Cập nhật trạng thái */}
+            {/* Cập nhật trạng thái / Hiển thị trạng thái */}
             <div className="space-y-2">
               <Label htmlFor="status">Trạng thái đơn hàng</Label>
-              <Select
-                // Quan trọng: value phải được bind với state
-                value={currentStatus}
-                onValueChange={(val) => setCurrentStatus(val)}
-                disabled={loading}
-              >
-                <SelectTrigger id="status" className="w-[250px]">
-                  <SelectValue placeholder="Chọn trạng thái" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(OrderStatus).map(([key, value]) => (
-                    <SelectItem key={key} value={value}>
-                      {OrderStatusLabel[key as keyof typeof OrderStatusLabel]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground mt-1">
-                * Lưu ý: Trạng thái phải tuân thủ quy trình (Ví dụ: PENDING
-                -&gt; CONFIRMED -&gt; PROCESSING...)
-              </p>
+
+              {!readOnly ? (
+                // --- VIEW CHO ADMIN: Select Box ---
+                <>
+                  <Select
+                    value={currentStatus}
+                    onValueChange={(val) => setCurrentStatus(val)}
+                    disabled={loading}
+                  >
+                    <SelectTrigger id="status" className="w-[250px]">
+                      <SelectValue placeholder="Chọn trạng thái" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(OrderStatus).map(([key, value]) => (
+                        <SelectItem key={key} value={value}>
+                          {
+                            OrderStatusLabel[
+                              key as keyof typeof OrderStatusLabel
+                            ]
+                          }
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    * Lưu ý: Trạng thái phải tuân thủ quy trình (Ví dụ: PENDING
+                    -&gt; CONFIRMED -&gt; PROCESSING...)
+                  </p>
+                </>
+              ) : (
+                // --- VIEW CHO USER: Text ---
+                <div className="text-lg font-medium text-primary">
+                  {OrderStatusLabel[
+                    order.status as keyof typeof OrderStatusLabel
+                  ] || order.status}
+                </div>
+              )}
             </div>
 
             {/* Danh sách sản phẩm */}
@@ -195,14 +245,43 @@ const ModalDetailOrder: React.FC<OrderModalProps> = ({
           </div>
         )}
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onCancel} disabled={loading}>
-            {cancelText}
-          </Button>
-          <Button onClick={handleUpdate} disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Lưu thay đổi
-          </Button>
+        <DialogFooter className="flex justify-between sm:justify-between items-center w-full">
+          {/* Nút Đóng - Luôn hiển thị */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={onCancel}
+              disabled={loading || isCancelling}
+            >
+              {cancelText}
+            </Button>
+          </div>
+
+          <div className="flex gap-2">
+            {/* --- NÚT HỦY ĐƠN (Chỉ hiện cho User + Status hợp lệ) --- */}
+            {readOnly && canCancel && (
+              <Button
+                variant="destructive"
+                onClick={handleCancelOrder}
+                disabled={isCancelling}
+              >
+                {isCancelling ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <XCircle className="mr-2 h-4 w-4" />
+                )}
+                Hủy đơn hàng
+              </Button>
+            )}
+
+            {/* --- NÚT LƯU (Chỉ hiện cho Admin) --- */}
+            {!readOnly && (
+              <Button onClick={handleUpdate} disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Lưu thay đổi
+              </Button>
+            )}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

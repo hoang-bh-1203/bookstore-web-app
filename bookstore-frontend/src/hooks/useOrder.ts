@@ -14,6 +14,7 @@ export const useOrder = () => {
   const [isCreating, setIsCreating] = useState(false);
   // Thêm state loading cho việc update
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const getAllOrders = useCallback(async (params?: PageableParams) => {
     const response = await Request.get<PagedResponse<Order>>(
@@ -60,6 +61,14 @@ export const useOrder = () => {
     [],
   );
 
+  const getMyOrders = useCallback(async (params?: PageableParams) => {
+    const response = await Request.get<PagedResponse<Order>>(
+      API_ENDPOINTS.MY_ORDERS,
+      { params },
+    );
+    return response;
+  }, []);
+
   const getDashboardStats = useCallback(async () => {
     const response = await Request.get<DashboardStats>(
       `${API_ENDPOINTS.ORDER_STATS}`,
@@ -67,12 +76,30 @@ export const useOrder = () => {
     return response;
   }, []);
 
+  const cancelOrder = useCallback(async (id: number) => {
+    setIsCancelling(true);
+    try {
+      // Endpoint: PUT /api/v1/orders/{id}/cancel
+      const response = await Request.put<OrderResponse>(
+        `${API_ENDPOINTS.ORDERS}/${id}/cancel`,
+      );
+      return response;
+    } catch (error: any) {
+      throw error;
+    } finally {
+      setIsCancelling(false);
+    }
+  }, []);
+
   return {
     getAllOrders,
     createOrder,
     updateOrder, // Export hàm này ra để Modal sử dụng
     getDashboardStats,
+    getMyOrders,
     isCreating,
+    cancelOrder,
+    isCancelling,
     isUpdating, // Export state này để disable nút khi đang lưu
   };
 };
