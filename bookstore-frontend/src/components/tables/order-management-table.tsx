@@ -30,25 +30,34 @@ import { useOrder } from '@/hooks/useOrder';
 // --- 1. Column Definitions ---
 const StatusBadge = ({ status }: { status: string }) => {
   let colorClass = 'bg-gray-500 hover:bg-gray-600';
+
   switch (status) {
+    case OrderStatus.PENDING:
+      colorClass = 'bg-yellow-500 hover:bg-yellow-600';
+      break;
     case OrderStatus.CONFIRMED:
       colorClass = 'bg-blue-500 hover:bg-blue-600';
       break;
-    case OrderStatus.DELIVERED:
-      colorClass = 'bg-orange-500 hover:bg-orange-600';
+    case OrderStatus.PROCESSING:
+      colorClass = 'bg-purple-500 hover:bg-purple-600';
       break;
-    case OrderStatus.COMPLETED:
+    case OrderStatus.SHIPPING:
+      colorClass = 'bg-indigo-500 hover:bg-indigo-600';
+      break;
+    case OrderStatus.DELIVERED:
       colorClass = 'bg-green-600 hover:bg-green-700';
       break;
     case OrderStatus.CANCELLED:
       colorClass = 'bg-red-500 hover:bg-red-600';
       break;
-    case OrderStatus.PENDING:
-      colorClass = 'bg-yellow-500 hover:bg-yellow-600';
-      break;
+    default:
+      colorClass = 'bg-gray-500 hover:bg-gray-600';
   }
+
   return (
-    <Badge className={`${colorClass} text-white capitalize border-none`}>
+    <Badge
+      className={`${colorClass} text-white hover:text-white capitalize border-none`}
+    >
       {OrderStatusLabel[status as keyof typeof OrderStatusLabel] || status}
     </Badge>
   );
@@ -315,7 +324,7 @@ const OrderManagementTable = () => {
       </div>
 
       <ModalDetailOrder
-        title={`Chi tiết đơn hàng #${selectedOrder?.id}`}
+        title={`Chi tiết đơn hàng `}
         onCancel={() => setOpenDetailModal(false)}
         open={openDetailModal}
         order={selectedOrder}

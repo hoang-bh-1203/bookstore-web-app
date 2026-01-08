@@ -4,17 +4,19 @@ export const UserRole = {
 } as const;
 
 export const OrderStatus = {
-  PENDING: 'pending',
-  CONFIRMED: 'confirmed',
-  DELIVERED: 'delivered',
-  COMPLETED: 'completed',
-  CANCELLED: 'cancelled',
+  PENDING: 'PENDING', // Chờ xác nhận
+  CONFIRMED: 'CONFIRMED', // Đã xác nhận
+  PROCESSING: 'PROCESSING', // Đang chuẩn bị hàng (Thêm mới)
+  SHIPPING: 'SHIPPING', // Đang giao hàng (Thêm mới)
+  DELIVERED: 'DELIVERED', // Giao thành công (Thay thế cho COMPLETED cũ)
+  CANCELLED: 'CANCELLED', // Đã hủy
 } as const;
 
 export const OrderStatusLabel = {
   PENDING: 'Chờ xác nhận',
   CONFIRMED: 'Đã xác nhận',
-  DELIVERED: 'Đang giao hàng',
-  COMPLETED: 'Đã giao hàng',
+  PROCESSING: 'Đang chuẩn bị hàng',
+  SHIPPING: 'Đang giao hàng',
+  DELIVERED: 'Giao hàng thành công',
   CANCELLED: 'Đã hủy',
 } as const;

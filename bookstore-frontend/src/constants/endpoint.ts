@@ -37,6 +37,7 @@ export const API_ENDPOINTS = {
   ORDERS_CREATE: '/orders/create',
   ORDER_BY_ID: (id: number) => `/orders/${id}`,
   MY_ORDERS: '/orders/me',
+  ORDER_STATS: 'orders/stats',
 
   GET_BOOK_FEATURED_COLLECTIONS: '/featured-collections',
 
