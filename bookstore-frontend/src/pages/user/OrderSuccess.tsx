@@ -69,7 +69,7 @@ export default function OrderSuccessPage() {
               asChild
               className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              <Link to="/products">Tiếp tục mua sắm</Link>
+              <Link to="/account/orders">Xem đơn hàng</Link>
             </Button>
             <Button asChild variant="outline" className="flex-1 bg-transparent">
               <Link to="/">Về trang chủ</Link>
