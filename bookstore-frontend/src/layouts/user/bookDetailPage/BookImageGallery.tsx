@@ -1,11 +1,11 @@
-import type { ImageBook } from '@/constants/interfaces.ts';
-import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react'; // Replaced antd icons
 import { Button } from '@/components/ui/button'; // Use Shadcn Button
+import type { BookImage } from '@/constants/interfaces.ts';
 import { cn } from '@/lib/utils';
+import { ChevronLeft, ChevronRight } from 'lucide-react'; // Replaced antd icons
+import { useEffect, useRef, useState } from 'react';
 
 interface BookImageGalleryProps {
-  images: ImageBook[];
+  images: BookImage[];
 }
 
 export default function BookImageGallery({ images }: BookImageGalleryProps) {
@@ -14,7 +14,7 @@ export default function BookImageGallery({ images }: BookImageGalleryProps) {
 
   useEffect(() => {
     if (images.length > 0) {
-      setSelectedImage(images[0].baseUrl || '');
+      setSelectedImage(images[0].imageUrl || '');
     }
   }, [images]);
 
@@ -71,14 +71,14 @@ export default function BookImageGallery({ images }: BookImageGalleryProps) {
                 'w-[54px] h-[54px] flex items-center justify-center',
                 'bg-white rounded-lg overflow-hidden',
                 'border-2 cursor-pointer flex-shrink-0',
-                selectedImage === img.baseUrl
+                selectedImage === img.imageUrl
                   ? 'border-primary' // Replaced border-blue-500
                   : 'border-border',
               )}
-              onClick={() => setSelectedImage(img.baseUrl || '')}
+              onClick={() => setSelectedImage(img.imageUrl || '')}
             >
               <img
-                src={img.baseUrl || ''}
+                src={img.imageUrl || ''}
                 alt="Thumbnail"
                 className="max-w-full max-h-full object-contain"
               />

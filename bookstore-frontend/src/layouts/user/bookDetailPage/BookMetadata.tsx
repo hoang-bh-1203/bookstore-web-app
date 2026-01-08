@@ -1,5 +1,5 @@
-import type { Book } from '@/constants/interfaces.ts';
 import { Separator } from '@/components/ui/separator';
+import type { Book } from '@/constants/interfaces.ts';
 
 interface BookMetaDataProps {
   book: Book | undefined;
@@ -8,13 +8,13 @@ interface BookMetaDataProps {
 export default function BookMetadata({ book }: BookMetaDataProps) {
   const data = [
     { label: 'Bookcare', value: 'Có' },
-    { label: 'Công ty phát hành', value: book?.publisherVn || '-' },
-    { label: 'Ngày xuất bản', value: book?.publicationDate || '-' },
-    { label: 'Kích thước', value: book?.dimensions || '-' },
-    { label: 'Dịch Giả', value: book?.dichGia || '-' },
-    { label: 'Loại bìa', value: book?.bookCover || '-' },
-    { label: 'Số trang', value: book?.numberOfPage || '-' },
-    { label: 'Nhà xuất bản', value: book?.manufacturer || '-' },
+    //{ label: 'Công ty phát hành', value: book?.publisher || '-' },
+    { label: 'Ngày xuất bản', value: book?.publisherDate || '-' },
+    { label: 'Kích thước', value: book?.dimension || '-' },
+    //{ label: 'Dịch Giả', value: book?.   || '-' },
+    //{ label: 'Loại bìa', value: book?.bookCover || '-' },
+    { label: 'Số trang', value: book?.numberOfPages || '-' },
+    { label: 'Nhà xuất bản', value: book?.publisher || '-' },
   ];
 
   return (

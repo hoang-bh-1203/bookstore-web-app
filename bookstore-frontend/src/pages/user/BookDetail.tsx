@@ -1,18 +1,17 @@
-import { useParams } from 'react-router-dom';
-import { useEffect, useMemo, useState } from 'react';
+import CustomBreadcrumb from '@/components/common/breadcrumb';
+import { Card, CardContent } from '@/components/ui/card';
 import type { Book } from '@/constants/interfaces';
 import { useBook } from '@/hooks/useBook.ts';
-import CustomBreadcrumb from '@/components/common/breadcrumb';
+import BookDescription from '@/layouts/user/bookDetailPage/BookDescription';
 import BookImageGallery from '@/layouts/user/bookDetailPage/BookImageGallery';
-import SummaryToggle from '@/layouts/user/bookDetailPage/SummaryToggle';
 import BookInfo from '@/layouts/user/bookDetailPage/BookInfo';
 import BookMetaData from '@/layouts/user/bookDetailPage/BookMetadata';
-import BookDescription from '@/layouts/user/bookDetailPage/BookDescription';
+import PurchaseActions from '@/layouts/user/bookDetailPage/PurchaseAction';
+import SaveShopping from '@/layouts/user/bookDetailPage/SaveShopping';
 import SimilarProducts from '@/layouts/user/bookDetailPage/SimilarProducts';
 import TopDeals from '@/layouts/user/bookDetailPage/TopDeals';
-import SaveShopping from '@/layouts/user/bookDetailPage/SaveShopping';
-import PurchaseActions from '@/layouts/user/bookDetailPage/PurchaseAction';
-import { Card, CardContent } from '@/components/ui/card';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 export default function BookDetail() {
   const { id } = useParams<{ id: string }>();
@@ -25,8 +24,8 @@ export default function BookDetail() {
     if (isNaN(bookId)) return;
     (async () => {
       try {
-        const data = await getBookById(bookId);
-        setBook(data);
+        const data = await getBookById(bookId);    
+        setBook(data);  
       } catch (error) {
         console.error('Error fetching book:', error);
       }
@@ -41,7 +40,7 @@ export default function BookDetail() {
     ],
     [book],
   );
-
+  //console.log('Book Detail Rendered with book:', book);
   return (
     <div className="flex-grow container mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-6">
       <CustomBreadcrumb items={breadcrumbItems} />
@@ -52,7 +51,7 @@ export default function BookDetail() {
             <Card className="sticky top-4">
               <CardContent className="p-4 flex flex-col gap-4">
                 <BookImageGallery images={book?.images || []} />
-                <SummaryToggle content={book?.shortDescription || ''} />
+                {/* <SummaryToggle content={book?.shortDescription || ''} /> */}
               </CardContent>
             </Card>
           </div>

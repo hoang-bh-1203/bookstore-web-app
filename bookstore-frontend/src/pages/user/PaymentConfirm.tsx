@@ -1,16 +1,16 @@
+import { AddressFormModal } from '@/components/address-form-modal';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { VoucherModal } from '@/components/voucher-modal';
-import { AddressFormModal } from '@/components/address-form-modal';
+import { useBook } from '@/hooks/useBook';
 import { useCart } from '@/hooks/useCart';
-import { useState, useEffect } from 'react';
-import { Tag, Trash2, Truck, CreditCard, MapPin, Ticket } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import { Header } from '@/layouts/user/Header';
 import { Footer } from '@/layouts/user/Footer';
+import { Header } from '@/layouts/user/Header';
+import { CreditCard, MapPin, Tag, Ticket, Trash2, Truck } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const DISCOUNT_CODES = {
   WELCOME10: {
@@ -82,6 +82,8 @@ const DISCOUNT_CODES = {
 export default function CheckoutPage() {
   const { selectedItems, selectedTotalPrice, clearCart } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { getBookById } = useBook();
 
   const [appliedProductDiscount, setAppliedProductDiscount] = useState<{
     code: string;
@@ -108,27 +110,28 @@ export default function CheckoutPage() {
   const [quickBuyItems, setQuickBuyItems] = useState<any[]>([]);
 
   useEffect(() => {
-    const quickBuyData = sessionStorage.getItem('quickBuyProduct');
-    if (quickBuyData) {
-      try {
-        const product = JSON.parse(quickBuyData);
-        setQuickBuyItems([
-          {
-            id: product.id,
-            title: product.title,
-            author: product.author,
-            price: product.price,
-            image: product.image,
-            quantity: product.quantity,
-          },
-        ]);
-        // Clear the sessionStorage after loading
-        sessionStorage.removeItem('quickBuyProduct');
-      } catch (error) {
-        console.error('Error parsing quick buy product:', error);
+    const fetchQuickBuyProduct = async () => {
+      const { bookId, quantity } = location.state || {};
+      if (bookId && quantity) {
+        try {
+          const book = await getBookById(bookId);
+          setQuickBuyItems([
+            {
+              id: book.id,
+              title: book.name,
+              author: book.authors?.map(a => a.name).join(', ') || '',
+              price: book.finalPrice,
+              image: book.images?.[0]?.imageUrl || '',
+              quantity: quantity,
+            },
+          ]);
+        } catch (error) {
+          console.error('Error fetching quick buy product:', error);
+        }
       }
-    }
-  }, []);
+    };
+    fetchQuickBuyProduct();
+  }, [location.state, getBookById]);
 
   const itemsToCheckout =
     quickBuyItems.length > 0 ? quickBuyItems : selectedItems;

@@ -1,15 +1,15 @@
 // layouts/user/book_detail_page/PurchaseActions.tsx
 
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import type { Book } from '@/constants/interfaces.ts';
-import { useState } from 'react';
-import { formattedPrice } from '@/utils/priceHelper.ts';
-import { useNavigate } from 'react-router';
-import { useModal } from '@/hooks/useModal.ts';
-import Counter from './Counter.tsx';
 import { useCart } from '@/hooks/useCart.ts';
+import { useModal } from '@/hooks/useModal.ts';
+import { formattedPrice } from '@/utils/priceHelper.ts';
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import Counter from './Counter.tsx';
 
 interface PurchaseActionsProps {
   book: Book | undefined;
@@ -17,7 +17,7 @@ interface PurchaseActionsProps {
 
 export default function PurchaseActions({ book }: PurchaseActionsProps) {
   const [quantity, setQuantity] = useState(1);
-  const totalPrice = book ? book.listPrice * quantity : 0;
+  const totalPrice = book ? book.price * quantity : 0;
   const navigate = useNavigate();
   const { openLoginModal } = useModal();
   const { addToCart, cartItems } = useCart();
@@ -28,7 +28,7 @@ export default function PurchaseActions({ book }: PurchaseActionsProps) {
       return;
     }
 
-    navigate('/payment', {
+    navigate('/confirm', {
       state: { bookId: book?.id, quantity: quantity },
     });
   };
@@ -51,8 +51,8 @@ export default function PurchaseActions({ book }: PurchaseActionsProps) {
     const success = addToCart({
       productId: book.id,
       name: book.name,
-      thumbnailUrl: book.images[0].thumbnailUrl,
-      price: book.listPrice,
+      thumbnailUrl: book.images[0].imageUrl,
+      price: book.price,
       originalPrice: book.originalPrice,
       quantity: quantity,
     });
@@ -97,13 +97,13 @@ export default function PurchaseActions({ book }: PurchaseActionsProps) {
           >
             Thêm vào giỏ
           </Button>
-          <Button
+          {/* <Button
             variant="outline"
             size="lg"
             className="w-full text-primary border-primary hover:text-primary"
           >
             Mua trước trả sau
-          </Button>
+          </Button> */}
         </div>
       </CardContent>
     </Card>
