@@ -19,7 +19,7 @@ export const useCart = () => {
   const clearCart = useCartStore((state) => state.clearCart);
 
   // 2. Auth state
-  const isAuthenticated = useAuthStore((state) => !!(state as any).token);
+  const isAuthenticated = useAuthStore((state) => !!(state as any).accessToken);
 
   // 3. Wrapper addToCart with Auth check
   const addToCart = useCallback(

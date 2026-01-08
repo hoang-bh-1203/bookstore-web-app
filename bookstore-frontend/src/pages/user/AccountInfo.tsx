@@ -105,7 +105,7 @@ const AccountInfo = () => {
   };
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen">
       <div className="max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Personal Information Form */}
@@ -195,6 +195,7 @@ const AccountInfo = () => {
                               placeholder="Nhập email"
                               {...field}
                               className="pl-10"
+                              disabled
                             />
                           </div>
                         </FormControl>

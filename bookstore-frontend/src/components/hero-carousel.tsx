@@ -7,20 +7,20 @@ export function HeroCarousel() {
   const slides = [
     {
       id: 1,
-      image: '/banner-1.jpg',
+      image: 'src/assets/banner-1.jpg',
       title: 'Sách Hay Tháng Này',
       description: 'Khám phá những cuốn sách được yêu thích nhất',
     },
     {
       id: 2,
-      image: '/banner-2.jpg',
+      image: 'src/assets/banner-2.jpg',
       title: 'Lễ Hội Ma Quỷ',
       description: 'Những cuốn sách kinh dị và bí ẩn',
     },
     {
       id: 3,
-      image: '/banner-3.jpg',
-      title: 'Tương Lai Nằng Động',
+      image: 'src/assets/banner-3.jpg',
+      title: 'Tương Lai Năng Động',
       description: 'Sách về công nghệ và tương lai',
     },
   ];

@@ -1,11 +1,10 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import CustomBreadcrumb from '@/components/common/breadcrumb';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { User, Bell, FileText, Menu, UserCircle2 } from 'lucide-react';
+import { User, FileText, Menu, UserCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Profile = () => {
@@ -13,26 +12,9 @@ const Profile = () => {
   const location = useLocation();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  const breadcrumbItems = useMemo(() => {
-    const currentPath = location.pathname;
-    let dynamicTitle = 'Thông tin tài khoản'; // Default
-
-    if (currentPath.includes('/account-info'))
-      dynamicTitle = 'Thông tin tài khoản';
-    else if (currentPath.includes('/notifications'))
-      dynamicTitle = 'Thông báo của tôi';
-    else if (currentPath.includes('/orders')) dynamicTitle = 'Đơn hàng của tôi';
-
-    return [
-      { title: 'Trang chủ', href: '/' },
-      { title: dynamicTitle, href: currentPath },
-    ];
-  }, [location.pathname]);
-
   const menuItems = [
     { icon: User, label: 'Thông tin tài khoản', href: '/account/info' },
-    { icon: Bell, label: 'Thông báo của tôi', href: '/account/notifications' },
-    { icon: FileText, label: 'Quản lý đơn hàng', href: '/account/orders' },
+    { icon: FileText, label: 'Đơn hàng của tôi', href: '/account/orders' },
   ];
 
   const SidebarContent = () => (
@@ -84,9 +66,8 @@ const Profile = () => {
   return (
     <div className="flex flex-col min-h-screen pb-8 bg-muted/30">
       <div className="flex-1">
-        <CustomBreadcrumb items={breadcrumbItems} />
         <div className="container max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+          <div className="flex flex-col md:flex-row gap-6 md:gap-8 py-8">
             {/* Sidebar Desktop */}
             <aside className="hidden md:block w-64 shrink-0 bg-background rounded-lg border shadow-sm h-fit sticky top-20">
               <SidebarContent />
