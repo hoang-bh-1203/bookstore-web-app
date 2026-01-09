@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { VoucherModal } from '@/components/voucher-modal';
+import apiClient from '@/configs/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useBook } from '@/hooks/useBook';
 import { useCart } from '@/hooks/useCart';
@@ -15,9 +16,7 @@ import {
   Loader2,
   MapPin,
   Tag,
-  Ticket,
-  Trash2,
-  Truck,
+  Truck
 } from 'lucide-react'; // Import Loader2
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -208,8 +207,10 @@ export default function CheckoutPage() {
 
     // 2. Map Payment Method
     let backendPaymentMethod: 'COD' | 'VNPAY' | 'MOMO' | 'BANKING' = 'COD';
-    if (paymentMethod === 'viettel') {
-      backendPaymentMethod = 'BANKING';
+    if (paymentMethod === 'momo') {
+      backendPaymentMethod = 'MOMO';
+    } else if (paymentMethod === 'vnpay') {
+      backendPaymentMethod = 'VNPAY';
     }
 
     // 3. Lấy Cart IDs (Giữ nguyên logic cũ)
@@ -237,9 +238,70 @@ export default function CheckoutPage() {
       const response = await createOrder(payload);
 
       if (response) {
+        const orderId = (response as any).data?.id || (response as any).id;
+        
+        // Nếu thanh toán qua MoMo hoặc VNPay, gọi API tạo thanh toán
+        if (paymentMethod === 'momo') {
+          try {
+            // Mở tab mới TRƯỚC KHI gọi API để tránh bị chặn popup
+            const paymentWindow = window.open('about:blank', '_blank');
+            
+            const momoResponse = await apiClient.post('/payments/momo/create', {
+              orderId: orderId,
+              orderInfo: `Thanh toan don hang ${orderId}`
+            });
+            console.log('MoMo response:', momoResponse);
+            
+            const paymentUrl = momoResponse.data?.data?.payUrl || momoResponse.data?.payUrl;
+            console.log('MoMo paymentUrl:', paymentUrl);
+            
+            if (paymentUrl && paymentWindow) {
+              // Cập nhật URL cho tab đã mở
+              paymentWindow.location.href = paymentUrl;
+              toast.success('Đang chuyển đến trang thanh toán MoMo...');
+              // Đóng tab hiện tại
+              window.close();
+              return;
+            } else if (paymentWindow) {
+              paymentWindow.close();
+            }
+          } catch (momoError: any) {
+            console.error('MoMo payment error:', momoError);
+            toast.error('Không thể tạo thanh toán MoMo. Vui lòng thử lại.');
+            return;
+          }
+        } else if (paymentMethod === 'vnpay') {
+          try {
+            // Mở tab mới TRƯỚC KHI gọi API để tránh bị chặn popup
+            const paymentWindow = window.open('about:blank', '_blank');
+            
+            const vnpayResponse = await apiClient.post('/payments/vnpay/create', {
+              orderId: orderId,
+              orderInfo: `Thanh toan don hang ${orderId}`
+            });
+            
+            const paymentUrl = vnpayResponse.data?.data?.paymentUrl || vnpayResponse.data?.paymentUrl;
+            console.log('VNPay paymentUrl:', paymentUrl);
+            if (paymentUrl && paymentWindow) {
+              // Cập nhật URL cho tab đã mở
+              paymentWindow.location.href = paymentUrl;
+              toast.success('Đang chuyển đến trang thanh toán VNPay...');
+              // Đóng tab hiện tại
+              window.close();
+              return;
+            } else if (paymentWindow) {
+              paymentWindow.close();
+            }
+          } catch (vnpayError: any) {
+            console.error('VNPay payment error:', vnpayError);
+            toast.error('Không thể tạo thanh toán VNPay. Vui lòng thử lại.');
+            return;
+          }
+        }
+        
+        // Với COD, điều hướng bình thường
         toast.success('Đặt hàng thành công!');
         getCart();
-        const orderId = (response as any).data?.id || (response as any).id;
         navigate(`/order-success?order=${orderNumber(orderId)}`);
       }
     } catch (error: any) {
@@ -430,7 +492,7 @@ export default function CheckoutPage() {
 
                   <label
                     className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-all ${
-                      paymentMethod === 'viettel'
+                      paymentMethod === 'momo'
                         ? 'border-primary bg-primary/5'
                         : 'border-border hover:border-primary/50'
                     }`}
@@ -438,13 +500,33 @@ export default function CheckoutPage() {
                     <input
                       type="radio"
                       name="payment"
-                      value="viettel"
-                      checked={paymentMethod === 'viettel'}
+                      value="momo"
+                      checked={paymentMethod === 'momo'}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                       className="w-4 h-4"
                     />
                     <span className="text-foreground font-medium">
-                      Chuyển khoản Ngân hàng / Viettel Money
+                      Thanh toán qua MoMo
+                    </span>
+                  </label>
+
+                  <label
+                    className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-all ${
+                      paymentMethod === 'vnpay'
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="vnpay"
+                      checked={paymentMethod === 'vnpay'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-foreground font-medium">
+                      Thanh toán qua VNPay
                     </span>
                   </label>
                 </CardContent>
