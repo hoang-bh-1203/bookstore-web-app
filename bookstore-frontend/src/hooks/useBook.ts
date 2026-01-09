@@ -1,7 +1,11 @@
 import Request from '@/configs/api';
 import { API_ENDPOINTS } from '@/constants/endpoint';
-import type { Book } from '@/constants/interfaces';
-import { useRef, useCallback } from 'react';
+import type {
+  Book,
+  PageableParams,
+  PagedResponse,
+} from '@/constants/interfaces';
+import { useCallback, useRef } from 'react';
 
 /**
  * Global cache to persist book data across component re-renders
@@ -16,22 +20,45 @@ const globalBookCache = new Map<number, Book>();
 export const useBook = () => {
   const bookCache = useRef<Map<number, Book>>(globalBookCache);
 
-  const getAllBooks = useCallback(async () => {
-    return await Request.get<Book[]>(API_ENDPOINTS.BOOKS);
+  const getAllBooks = useCallback(async (params?: PageableParams) => {
+    const response = await Request.get<PagedResponse<Book>>(
+      API_ENDPOINTS.BOOKS,
+      { params },
+    );
+    return response;
   }, []);
 
-  const getTopSellingBooks = useCallback(async () => {
-    const response = await Request.get<Book[]>(API_ENDPOINTS.BOOKS, {
-      params: {
-        _limit: 10,
-        _sort: 'quantitySold',
-        _order: 'desc',
-      },
-    });
-    return response
-      .filter((book) => book.quantitySold !== undefined)
-      .slice(0, 10);
+  const getBooksByPriceRange = useCallback(async (params?: PageableParams) => {
+    const response = await Request.get<PagedResponse<Book>>(
+      API_ENDPOINTS.BOOKS_BY_PRICE_RANGE,
+      { params },
+    );
+    return response;
   }, []);
+
+  const getBooksByCategory = useCallback(
+    async (categoryId: number, params?: PageableParams) => {
+      const response = await Request.get<PagedResponse<Book>>(
+        API_ENDPOINTS.GET_PRODUCTS_BY_CATEGORY(categoryId),
+        { params },
+      );
+      return response;
+    },
+    [],
+  );
+
+  // const getTopSellingBooks = useCallback(async () => {
+  //   const response = await Request.get<Book[]>(API_ENDPOINTS.BOOKS, {
+  //     params: {
+  //       _limit: 10,
+  //       _sort: 'quantitySold',
+  //       _order: 'desc',
+  //     },
+  //   });
+  //   return response
+  //     .filter((book) => book.quantitySold !== undefined)
+  //     .slice(0, 10);
+  // }, []);
 
   const getBookById = useCallback(async (id: number) => {
     // Return cached book if available
@@ -79,6 +106,18 @@ export const useBook = () => {
     [],
   );
 
+  const getSimilarBooks = useCallback(async (id: number) => {
+    const response = await Request.get<Book[]>(API_ENDPOINTS.SIMILAR_BOOKS(id));
+    return response;
+  }, []);
+
+  const searchBooks = useCallback(async (keyword: string) => {
+    const response = await Request.get<Book[]>(API_ENDPOINTS.SEARCH_PRODUCTS, {
+      params: { q: keyword },
+    });
+    return response;
+  }, []);
+
   /**
    * Manually clears the entire book cache
    * Useful for forcing data refresh
@@ -89,12 +128,16 @@ export const useBook = () => {
 
   return {
     getAllBooks,
+    getBooksByPriceRange,
+    getBooksByCategory,
     getBookById,
     createBook,
     updateBook,
     deleteBook,
-    getTopSellingBooks,
+    // getTopSellingBooks,
     getBookFeaturedCollections,
+    getSimilarBooks,
+    searchBooks,
     clearCache,
   };
 };

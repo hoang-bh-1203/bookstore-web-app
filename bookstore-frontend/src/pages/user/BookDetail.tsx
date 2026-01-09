@@ -1,18 +1,18 @@
-import { useParams } from 'react-router-dom';
-import { useEffect, useMemo, useState } from 'react';
+import CustomBreadcrumb from '@/components/common/breadcrumb';
+import { Card, CardContent } from '@/components/ui/card';
 import type { Book } from '@/constants/interfaces';
 import { useBook } from '@/hooks/useBook.ts';
-import CustomBreadcrumb from '@/components/common/breadcrumb';
+import { useCart } from '@/hooks/useCart';
+import BookDescription from '@/layouts/user/bookDetailPage/BookDescription';
 import BookImageGallery from '@/layouts/user/bookDetailPage/BookImageGallery';
-import SummaryToggle from '@/layouts/user/bookDetailPage/SummaryToggle';
 import BookInfo from '@/layouts/user/bookDetailPage/BookInfo';
 import BookMetaData from '@/layouts/user/bookDetailPage/BookMetadata';
-import BookDescription from '@/layouts/user/bookDetailPage/BookDescription';
+import PurchaseActions from '@/layouts/user/bookDetailPage/PurchaseAction';
+import SaveShopping from '@/layouts/user/bookDetailPage/SaveShopping';
 import SimilarProducts from '@/layouts/user/bookDetailPage/SimilarProducts';
 import TopDeals from '@/layouts/user/bookDetailPage/TopDeals';
-import SaveShopping from '@/layouts/user/bookDetailPage/SaveShopping';
-import PurchaseActions from '@/layouts/user/bookDetailPage/PurchaseAction';
-import { Card, CardContent } from '@/components/ui/card';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 export default function BookDetail() {
   const { id } = useParams<{ id: string }>();
@@ -41,9 +41,9 @@ export default function BookDetail() {
     ],
     [book],
   );
-
+  //console.log('Book Detail Rendered with book:', book);
   return (
-    <div className="flex flex-col min-h-screen pb-20 lg:pb-0">
+    <div className="flex-grow container mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-6">
       <CustomBreadcrumb items={breadcrumbItems} />
       <main className="flex-1 mt-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -52,7 +52,7 @@ export default function BookDetail() {
             <Card className="sticky top-4">
               <CardContent className="p-4 flex flex-col gap-4">
                 <BookImageGallery images={book?.images || []} />
-                <SummaryToggle content={book?.shortDescription || ''} />
+                {/* <SummaryToggle content={book?.shortDescription || ''} /> */}
               </CardContent>
             </Card>
           </div>

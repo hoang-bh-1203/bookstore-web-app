@@ -10,29 +10,25 @@ interface SimilarProductsProps {
 
 export default function SimilarProducts({ book }: SimilarProductsProps) {
   const [books, setBooks] = useState<Book[]>([]);
-  const [allBooks, setAllBooks] = useState<Book[]>([]);
-  const { getAllBooks } = useBook();
+  const { getSimilarBooks } = useBook();
   const isLg = useMediaQuery({ minWidth: 1024 });
   const isMd = useMediaQuery({ minWidth: 768 });
 
-  // This logic is all fine
   useEffect(() => {
-    const fetchBooks = async () => {
-      const data = await getAllBooks();
-      setAllBooks(data);
-    };
-    fetchBooks();
-  }, [getAllBooks]); // Added dependency
+    const fetchSimilarBooks = async () => {
+      if (!book?.id) return;
 
-  useEffect(() => {
-    if (!book?.categoriesId) {
-      setBooks(allBooks);
-      return;
-    }
-    if (allBooks.length > 0) {
-      setBooks(allBooks.filter((b) => b.categoriesId === book?.categoriesId));
-    }
-  }, [allBooks, book?.categoriesId]);
+      try {
+        const data = await getSimilarBooks(book.id);
+        setBooks(data || []);
+      } catch (error) {
+        console.error('Error fetching similar books:', error);
+        setBooks([]);
+      }
+    };
+
+    fetchSimilarBooks();
+  }, [book?.id, getSimilarBooks]);
 
   return (
     <div className="flex flex-col gap-4">

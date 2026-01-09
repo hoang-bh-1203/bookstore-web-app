@@ -17,6 +17,23 @@ class Engine:
         self.model = load_model(Config)
         self.qdrant = QdrantHandler()
 
+    def process_input(self, name, category, description):
+        """Process and prepare input text for embedding"""
+        # Clean each component
+        name = self.processor.clean_text(name)
+        category = self.processor.clean_text(category)
+        description = self.processor.clean_text(description)
+
+        # Truncate description to 200 words
+        description = " ".join(description.split()[:200])
+
+        # Format: name + category + description
+        formatted_text = f"Tiêu đề: {name}. Thể loại: {category}. Mô tả: {description}"
+
+        encoded_text = self.encode(formatted_text)
+
+        return encoded_text
+
     def encode(self, text):
         segmented = self.processor.segment(text)
         inputs = self.tokenizer(
@@ -66,11 +83,11 @@ class Engine:
         # top_k + 1 because the book itself will be in results
         results = self.qdrant.search(book_vector, limit=top_k + 1)
 
-        # Filter out the input book and return only book IDs
+        # Filter out the input book and return book data
         recommendations = []
         for hit in results:
             if hit.id != book_id:  # Exclude the input book
-                recommendations.append(hit.id)
+                recommendations.append({"book_id": hit.id, "score": hit.score})
                 if len(recommendations) >= top_k:
                     break
 

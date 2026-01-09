@@ -1,134 +1,75 @@
-/**
- * Shopping cart store using Zustand with Immer
- * Manages cart items and recent order information with persistent storage
- */
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import { immer } from 'zustand/middleware/immer'; // Use Immer for safe state mutations
-import type { CartItem, CreateOrderResponse } from '@/constants/interfaces';
-import { formattedPrice } from '@/utils/priceHelper';
-import { randomDeliveryDate } from '@/utils/dateHelper';
+import { immer } from 'zustand/middleware/immer';
+import type { CartItem } from '@/constants/interfaces';
 
-/**
- * Cart state interface
- */
 interface CartState {
   items: CartItem[];
-  recentOrder: {
-    totalAmount: string;
-    orderId: number;
-    productId: number;
-    productName: string;
-    thumbnailUrl: string;
-    deliveryDate: string;
-  } | null;
+  isLoading: boolean;
 }
 
-/**
- * Cart actions interface
- */
 interface CartActions {
-  addToCart: (item: CartItem) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (payload: { id: number; quantity: number }) => void;
-  clearCart: () => void;
-  setRecentOrder: (order: CreateOrderResponse) => void;
-  clearRecentOrder: () => void;
+  setCart: (items: CartItem[]) => void;
+  setLoading: (loading: boolean) => void;
+  // Các action UI update (Optimistic update)
+  updateItemQuantityLocal: (productId: number, quantity: number) => void;
+  removeItemLocal: (productId: number) => void;
+  toggleItemSelection: (productId: number) => void;
+  toggleAllSelection: () => void;
+  clearCartLocal: () => void;
 }
 
-/**
- * Initial cart state
- */
-const initialState: CartState = {
-  items: [], // Will be hydrated from localStorage by persist middleware
-  recentOrder: null,
-};
-
-/**
- * Create cart store with Immer and persistence
- * Immer middleware must be wrapped inside persist middleware
- */
 export const useCartStore = create<CartState & CartActions>()(
-  persist(
-    // Immer allows direct state mutations (like Redux Toolkit)
-    // e.g., state.items.push() instead of returning new arrays
-    immer((set) => ({
-      ...initialState,
+  immer((set) => ({
+    items: [],
+    isLoading: false,
 
-      /**
-       * All reducer logic goes here
-       * Note: No manual localStorage.setItem calls needed
-       * Persist middleware handles storage automatically after each state change
-       */
+    setLoading: (loading) => set({ isLoading: loading }),
 
-      addToCart: (newItem) =>
-        set((state) => {
+    // Action này dùng để sync data từ Backend vào Store
+    setCart: (newItems) =>
+      set((state) => {
+        // Giữ lại trạng thái selected của user nếu item đã tồn tại
+        const mergedItems = newItems.map((newItem) => {
           const existingItem = state.items.find(
-            (item: any) => item.productId === newItem.productId,
+            (i) => i.productId === newItem.productId,
           );
-          if (existingItem) {
-            existingItem.quantity += newItem.quantity;
-          } else {
-            state.items.push(newItem);
-          }
-        }),
-
-      removeFromCart: (productId) =>
-        set((state) => {
-          state.items = state.items.filter(
-            (item: any) => item.productId !== productId,
-          );
-        }),
-
-      updateQuantity: (payload) =>
-        set((state) => {
-          const item = state.items.find((i: any) => i.productId === payload.id);
-          if (item) {
-            item.quantity = payload.quantity;
-          }
-        }),
-
-      clearCart: () =>
-        set((state) => {
-          state.items = [];
-        }),
-
-      // Manage recent order information
-      setRecentOrder: (payload) =>
-        set((state) => {
-          if (!payload || !payload.orderId) {
-            console.error('Invalid order data:', payload);
-            return;
-          }
-          const price = formattedPrice(payload.totalAmount);
-          state.recentOrder = {
-            totalAmount: price,
-            orderId: payload.orderId,
-            productId: payload.products?.[0]?.productId,
-            productName: payload.products?.[0]?.productName,
-            thumbnailUrl: payload.products?.[0]?.thumbnailUrl,
-            deliveryDate: randomDeliveryDate(),
+          return {
+            ...newItem,
+            selected: existingItem ? existingItem.selected : true, // Mặc định chọn nếu mới
           };
-        }),
+        });
+        state.items = mergedItems;
+      }),
 
-      clearRecentOrder: () =>
-        set((state) => {
-          state.recentOrder = null;
-        }),
-    })),
-    {
-      name: 'cart-storage', // localStorage key name
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ items: state.items }), // Only persist cart items, not recentOrder
-    },
-  ),
+    updateItemQuantityLocal: (productId, quantity) =>
+      set((state) => {
+        const item = state.items.find((i) => i.productId === productId);
+        if (item) item.quantity = quantity;
+      }),
+
+    removeItemLocal: (productId) =>
+      set((state) => {
+        state.items = state.items.filter((i) => i.productId !== productId);
+      }),
+
+    clearCartLocal: () =>
+      set((state) => {
+        state.items = [];
+      }),
+
+    toggleItemSelection: (productId) =>
+      set((state) => {
+        const item = state.items.find((i) => i.productId === productId);
+        if (item) item.selected = !item.selected;
+      }),
+
+    toggleAllSelection: () =>
+      set((state) => {
+        const allSelected =
+          state.items.length > 0 && state.items.every((i) => i.selected);
+        state.items.forEach((i) => {
+          i.selected = !allSelected;
+        });
+      }),
+  })),
 );
-
-export const {
-  addToCart,
-  removeFromCart,
-  updateQuantity,
-  clearCart,
-  setRecentOrder,
-  clearRecentOrder,
-} = useCartStore.getState();

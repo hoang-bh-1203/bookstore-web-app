@@ -1,16 +1,18 @@
 import Request from '@/configs/api';
 import { API_ENDPOINTS } from '@/constants/endpoint';
-import type { Order } from '@/constants/interfaces';
+import type {
+  Order,
+  PageableParams,
+  PagedResponse,
+} from '@/constants/interfaces';
 
-export async function orderLoader(): Promise<Order[]> {
-  try {
-    const response = await Request.get<Order[]>(API_ENDPOINTS.ORDERS);
-    return response;
-  } catch (error) {
-    console.error('Failed to load orders:', error);
-    return [];
-  }
-}
+export const orderLoader = async (params?: PageableParams) => {
+  const response = await Request.get<PagedResponse<Order>>(
+    API_ENDPOINTS.ORDERS,
+    { params },
+  );
+  return response;
+};
 
 export async function myOrderLoader(): Promise<Order[]> {
   try {

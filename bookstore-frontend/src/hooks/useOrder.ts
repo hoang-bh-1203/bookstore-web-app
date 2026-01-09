@@ -1,48 +1,105 @@
-// src/hooks/useOrder.ts (ĐÃ REFACTOR)
 import Request from '@/configs/api';
 import { API_ENDPOINTS } from '@/constants/endpoint';
 import type {
-  CreateOrderResponse,
+  CreateOrderRequest,
+  OrderResponse,
+  DashboardStats,
   Order,
-  OrderCreate,
+  PageableParams,
+  PagedResponse,
 } from '@/constants/interfaces';
-import { useCartStore } from '@/stores/useCartStore';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 export const useOrder = () => {
-  // 2. Lấy action 'setRecentOrder' trực tiếp từ store
-  // Hook này sẽ subscribe vào action, an toàn về hiệu suất
-  const setRecentOrder = useCartStore((state) => state.setRecentOrder);
+  const [isCreating, setIsCreating] = useState(false);
+  // Thêm state loading cho việc update
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
-  const getAllOrders = useCallback(async () => {
-    const response = await Request.get<Order[]>(API_ENDPOINTS.ORDERS);
+  const getAllOrders = useCallback(async (params?: PageableParams) => {
+    const response = await Request.get<PagedResponse<Order>>(
+      API_ENDPOINTS.ORDERS,
+      { params },
+    );
     return response;
   }, []);
 
-  const updateOrder = useCallback(
-    async (id: number, orderData: Partial<Order>) => {
-      const response = await Request.put<Order>(
-        API_ENDPOINTS.ORDER_BY_ID(id),
+  // --- TẠO ĐƠN HÀNG ---
+  const createOrder = useCallback(async (orderData: CreateOrderRequest) => {
+    setIsCreating(true);
+    try {
+      const response = await Request.post<OrderResponse>(
+        API_ENDPOINTS.ORDERS,
         orderData,
       );
       return response;
+    } catch (error: any) {
+      throw error;
+    } finally {
+      setIsCreating(false);
+    }
+  }, []);
+
+  // --- CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG (MỚI BỔ SUNG) ---
+  const updateOrder = useCallback(
+    async (id: number, data: { status: string }) => {
+      setIsUpdating(true);
+      try {
+        // Backend Endpoint: PUT /api/v1/orders/admin/{id}/status
+        // API_ENDPOINTS.ORDERS thường là '/api/v1/orders'
+        const response = await Request.put<OrderResponse>(
+          `${API_ENDPOINTS.ORDERS}/admin/${id}/status`,
+          data,
+        );
+        return response;
+      } catch (error: any) {
+        throw error;
+      } finally {
+        setIsUpdating(false);
+      }
     },
     [],
   );
 
-  const createOrders = useCallback(
-    async (ordersData: Partial<OrderCreate[]>) => {
-      const response = await Request.post<CreateOrderResponse>(
-        API_ENDPOINTS.ORDERS_CREATE,
-        ordersData,
+  const getMyOrders = useCallback(async (params?: PageableParams) => {
+    const response = await Request.get<PagedResponse<Order>>(
+      API_ENDPOINTS.MY_ORDERS,
+      { params },
+    );
+    return response;
+  }, []);
+
+  const getDashboardStats = useCallback(async () => {
+    const response = await Request.get<DashboardStats>(
+      `${API_ENDPOINTS.ORDER_STATS}`,
+    );
+    return response;
+  }, []);
+
+  const cancelOrder = useCallback(async (id: number) => {
+    setIsCancelling(true);
+    try {
+      // Endpoint: PUT /api/v1/orders/{id}/cancel
+      const response = await Request.put<OrderResponse>(
+        `${API_ENDPOINTS.ORDERS}/${id}/cancel`,
       );
-
-      // 3. Gọi action trực tiếp, không cần dispatch
-      setRecentOrder(response);
       return response;
-    },
-    [],
-  );
+    } catch (error: any) {
+      throw error;
+    } finally {
+      setIsCancelling(false);
+    }
+  }, []);
 
-  return { getAllOrders, updateOrder, createOrders };
+  return {
+    getAllOrders,
+    createOrder,
+    updateOrder, // Export hàm này ra để Modal sử dụng
+    getDashboardStats,
+    getMyOrders,
+    isCreating,
+    cancelOrder,
+    isCancelling,
+    isUpdating, // Export state này để disable nút khi đang lưu
+  };
 };

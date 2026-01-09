@@ -8,3 +8,6 @@ pandas
 dotenv
 mysql-connector-python
 apscheduler
+requests
+pillow
+cloudinary

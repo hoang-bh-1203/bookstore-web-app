@@ -14,7 +14,8 @@ import type { User } from '@/constants/interfaces';
  */
 interface AuthState {
   user: User | null;
-  token: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   error: string | null;
   isLoading: boolean;
 }
@@ -24,10 +25,19 @@ interface AuthState {
  */
 interface AuthActions {
   login: (credentials: { email: string; password: string }) => Promise<void>;
+  register: (data: {
+    email: string;
+    fullName: string;
+    password: string;
+  }) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<void>;
   checkAuth: () => Promise<void>;
+  refresh: () => Promise<string | null>;
   logout: () => void;
   clearError: () => void;
   setUser: (user: User) => void;
+  clearToken: () => void;
 }
 
 /**
@@ -35,7 +45,8 @@ interface AuthActions {
  */
 const initialState: AuthState = {
   user: null,
-  token: null, // Will be hydrated from localStorage by persist middleware
+  accessToken: null, // Will be hydrated from localStorage by persist middleware
+  refreshToken: null,
   error: null,
   isLoading: true, // Start as true to trigger checkAuth on app initialization
 };
@@ -55,15 +66,17 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
       // Asynchronous actions (equivalent to Redux async thunks)
       login: async (credentials) => {
-        set({ error: null }); // Clear any previous errors (pending state)
+        set({ error: null, isLoading: true }); // Clear any previous errors (pending state)
         try {
-          const response = await Request.post<{ user: User; token: string }>(
-            API_ENDPOINTS.LOGIN,
-            credentials,
-          );
+          const response = await Request.post<{
+            accessToken: string;
+            refreshToken: string;
+          }>(API_ENDPOINTS.LOGIN, credentials);
           // Success: update user and token (fulfilled state)
-          set({ user: response.user, token: response.token });
-          localStorage.setItem('authToken', response.token);
+          set({
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+          });
 
           await get().checkAuth();
           // Persist middleware automatically saves token to localStorage
@@ -71,16 +84,115 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           // Error: set error message (rejected state)
           set({
             error: error.response?.data?.message || 'Login failed',
+            isLoading: false,
           });
+          throw error;
+        }
+      },
+
+      register: async (data) => {
+        set({ error: null, isLoading: true });
+        try {
+          const response = await Request.post<{
+            accessToken?: string;
+            refreshToken?: string;
+          } | null>(API_ENDPOINTS.REGISTER, data);
+
+          // If response includes tokens, auto login
+          if (response && response.accessToken && response.refreshToken) {
+            set({
+              accessToken: response.accessToken,
+              refreshToken: response.refreshToken,
+            });
+            await get().checkAuth();
+          }
+
+          set({ isLoading: false });
+        } catch (error: any) {
+          console.error('Registration error:', error);
+          set({
+            error:
+              error.response?.data?.message ||
+              error.message ||
+              'Registration failed',
+            isLoading: false,
+          });
+        }
+      },
+
+      forgotPassword: async (email) => {
+        set({ error: null, isLoading: true });
+        try {
+          await Request.post(API_ENDPOINTS.FORGOT_PASSWORD, { email });
+          set({ isLoading: false });
+        } catch (error: any) {
+          set({
+            error:
+              error.response?.data?.message || 'Failed to send reset email',
+            isLoading: false,
+          });
+          throw error;
+        }
+      },
+
+      resetPassword: async (token, newPassword) => {
+        set({ error: null, isLoading: true });
+        try {
+          await Request.post(API_ENDPOINTS.RESET_PASSWORD, {
+            token,
+            newPassword,
+          });
+          set({ isLoading: false });
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.message || 'Failed to reset password',
+            isLoading: false,
+          });
+          throw error;
+        }
+      },
+
+      refresh: async () => {
+        const refreshToken = get().refreshToken;
+
+        if (!refreshToken) {
+          get().logout();
+          return null;
+        }
+
+        try {
+          const response = await Request.post<{
+            accessToken: string;
+            refreshToken: string;
+          }>(API_ENDPOINTS.REFRESH_TOKEN, {
+            refreshToken,
+          });
+
+          set({
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+          });
+
+          return response.accessToken;
+        } catch (error) {
+          console.error('Refresh token failed', error);
+          get().logout();
+          return null;
         }
       },
 
       checkAuth: async () => {
         set({ isLoading: true }); // Start loading (pending state)
-        const token = get().token; // Get token from persisted state
 
-        if (!token) {
-          set({ ...initialState, isLoading: false, token: null }); // No token, skip authentication check
+        const currentToken = get().accessToken;
+        console.log(
+          'checkAuth called with token:',
+          currentToken?.substring(0, 20) + '...',
+        );
+
+        if (!currentToken) {
+          console.log('No access token, resetting state');
+          set({ ...initialState, isLoading: false });
           return;
         }
 
@@ -88,28 +200,57 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           const user = await Request.get<User>(API_ENDPOINTS.ME);
           if (!user) throw new Error('No user data');
 
+          console.log('User data fetched:', {
+            email: user.email,
+            role: user.role,
+            fullName: user.fullName,
+          });
+
           // Success: update user data (fulfilled state)
           set({ user, isLoading: false });
-          localStorage.setItem('user', JSON.stringify(user)); // Keep existing user storage logic
         } catch (error: any) {
-          // Error: clear auth state (rejected state)
-          set({ user: null, token: null, isLoading: false });
-          localStorage.removeItem('user');
-          console.error('Invalid token:', error);
+          console.error('checkAuth error:', error);
+          set({ isLoading: false });
         }
       },
 
-      logout: () => {
-        // Clear user data from localStorage
-        localStorage.removeItem('user');
-        set({ user: null, token: null, error: null });
+      logout: async () => {
+        const refreshToken = get().refreshToken;
+
+        try {
+          if (refreshToken) {
+            // Send refreshToken in the body according to API documentation
+            await Request.post<{ message: string }>(API_ENDPOINTS.LOGOUT, {
+              refreshToken,
+            });
+          }
+        } catch (error) {
+          console.error('Logout request failed', error);
+          // Continue with local logout even if API call fails
+        }
+
+        // Clear local state regardless of API call result
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          error: null,
+          isLoading: false,
+        });
         // Persist middleware automatically removes token from localStorage
+      },
+
+      clearToken: async () => {
+        set({ accessToken: null, refreshToken: null, user: null });
       },
     }),
     {
       name: 'auth-token-storage', // localStorage key name
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ token: state.token }), // Only persist the token field
+      partialize: (state) => ({
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
+      }),
     },
   ),
 );
@@ -119,7 +260,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
  * Can be used directly in components: const user = useAuthStore(selectUser)
  */
 export const selectUser = (state: AuthState) => state.user;
-export const selectIsAuthenticated = (state: AuthState) => !!state.token;
+export const selectIsAuthenticated = (state: AuthState) => !!state.accessToken;
 export const selectIsAdmin = (state: AuthState) =>
   state.user?.role === UserRole.ADMIN;
 export const selectError = (state: AuthState) => state.error;

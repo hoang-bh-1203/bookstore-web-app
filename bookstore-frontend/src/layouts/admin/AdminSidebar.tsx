@@ -6,7 +6,6 @@ import {
   Users,
   ShoppingCart,
   ScrollText,
-  User,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -69,11 +68,6 @@ export default function AdminSidebar({ collapsed }: AdminSidebarProps) {
         },
       ],
     },
-    {
-      key: '/admin/profile',
-      icon: <User className="h-4 w-4" />,
-      label: 'Thông tin cá nhân',
-    },
   ];
 
   const handleMenuClick = ({ key }: { key: string }) => {
@@ -107,6 +101,11 @@ export default function AdminSidebar({ collapsed }: AdminSidebarProps) {
   const renderMenuItem = (item: MenuItem) => {
     const isActive = selectedKeys.includes(item.key);
 
+    const buttonClasses = cn(
+      'w-full gap-2',
+      collapsed ? 'justify-center px-2' : 'justify-start',
+    );
+
     if (item.children) {
       return (
         <Collapsible
@@ -117,7 +116,7 @@ export default function AdminSidebar({ collapsed }: AdminSidebarProps) {
           <CollapsibleTrigger asChild>
             <Button
               variant={isActive ? 'secondary' : 'ghost'}
-              className="w-full justify-start gap-2"
+              className={buttonClasses}
             >
               {item.icon}
               {!collapsed && (
@@ -146,7 +145,7 @@ export default function AdminSidebar({ collapsed }: AdminSidebarProps) {
       <Button
         key={item.key}
         variant={isActive ? 'secondary' : 'ghost'}
-        className="w-full justify-start gap-2"
+        className={buttonClasses}
         onClick={() => handleMenuClick({ key: item.key })}
       >
         {item.icon}

@@ -36,9 +36,9 @@ function CustomRating({ rating }: { rating: number }) {
 export default function BookInfo({ book }: BookInfoProps) {
   const authors = book?.authors || [];
   const title = book?.name || '';
-  const listPrice = book?.listPrice || 0;
+  const listPrice = book?.price || 0;
   const originalPrice = book?.originalPrice || 0;
-  const ratingAverage = book?.ratingAverage || 0.0;
+  const ratingAverage = book?.ratingAvg || 0.0;
 
   const discount =
     originalPrice > 0 && listPrice < originalPrice

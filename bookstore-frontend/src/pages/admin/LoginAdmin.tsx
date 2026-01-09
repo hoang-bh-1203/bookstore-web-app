@@ -6,19 +6,17 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const LoginAdmin = () => {
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (user?.role === 'ROLE_ADMIN') {
       navigate('/admin', { replace: true });
     }
-  }, [isAuthenticated, navigate]);
-
-  if (isAuthenticated) return null;
+  }, [user, navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-muted/30">
       <div className="w-full max-w-md">
         <AdminLoginForm />
       </div>

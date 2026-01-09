@@ -24,7 +24,10 @@ const ModalFormCreateCategory = ({
 }: ModalFormCreateCategoryProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="sm:max-w-[500px]"
+      >
         <DialogHeader>
           <DialogTitle>
             {defaultValues ? 'Sửa danh mục' : 'Tạo danh mục'}
