@@ -81,6 +81,10 @@ const router = createBrowserRouter([
         element: withSuspense(ProductDetail),
       },
       {
+        path: 'books/:id',
+        element: withSuspense(ProductDetail),
+      },
+      {
         path: 'cart',
         element: withSuspense(Cart),
       },

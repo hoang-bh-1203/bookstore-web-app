@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
   BOOKS: '/products',
   BOOK_BY_ID: (id: number) => `/products/${id}`,
   BOOKS_BY_PRICE_RANGE: '/products/by-price-range',
+  SIMILAR_BOOKS: (id: number) => `/products/product/${id}/similar`,
 
   // Product API endpoints
   PRODUCTS: '/products',

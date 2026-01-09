@@ -51,10 +51,17 @@ export default function BookCard({ book }: BookCardProps) {
     setShowAd(Math.random() < 0.5);
   }, [book?.id]);
 
+  const handleClick = () => {
+    if (book?.id) {
+      navigate(`/books/${book.id}`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <Card
       className="rounded-lg overflow-hidden hover:shadow-md transition-shadow border-[#EBEBF0] bg-white cursor-pointer h-full flex flex-col"
-      onClick={() => navigate(`/books/${book?.id}`)}
+      onClick={handleClick}
     >
       <CardHeader className="p-0 relative">
         <div
@@ -62,7 +69,7 @@ export default function BookCard({ book }: BookCardProps) {
           style={{ width: '100%', paddingTop: '100%', overflow: 'hidden' }} // Use aspect-ratio trick
         >
           <img
-            src={book?.images?.[0]?.thumbnailUrl || '/placeholder.svg'}
+            src={book?.images?.[0]?.imageUrl || '/placeholder.svg'}
             alt={book?.name || 'Book'}
             className="absolute top-0 left-0 w-full h-full object-contain p-2"
           />
@@ -79,11 +86,11 @@ export default function BookCard({ book }: BookCardProps) {
       </CardContent>
 
       <CardFooter className="p-2 flex flex-col items-start">
-        {(book?.ratingAverage || 0) > 0 && (
-          <CustomRating rating={book?.ratingAverage || 0} />
+        {(book?.ratingAvg || 0) > 0 && (
+          <CustomRating rating={book?.ratingAvg || 0} />
         )}
         <div className="font-medium text-sm mt-1">
-          {formattedPrice(book?.listPrice || 0)}
+          {formattedPrice(book?.finalPrice || 0)}
           <sup>₫</sup>
         </div>
       </CardFooter>

@@ -36,13 +36,16 @@ export const useBook = () => {
     return response;
   }, []);
 
-  const getBooksByCategory = useCallback(async (categoryId: number, params?: PageableParams) => {
-    const response = await Request.get<PagedResponse<Book>>(
-      API_ENDPOINTS.GET_PRODUCTS_BY_CATEGORY(categoryId),
-      { params },
-    );
-    return response;
-  }, []);
+  const getBooksByCategory = useCallback(
+    async (categoryId: number, params?: PageableParams) => {
+      const response = await Request.get<PagedResponse<Book>>(
+        API_ENDPOINTS.GET_PRODUCTS_BY_CATEGORY(categoryId),
+        { params },
+      );
+      return response;
+    },
+    [],
+  );
 
   // const getTopSellingBooks = useCallback(async () => {
   //   const response = await Request.get<Book[]>(API_ENDPOINTS.BOOKS, {
@@ -103,6 +106,18 @@ export const useBook = () => {
     [],
   );
 
+  const getSimilarBooks = useCallback(async (id: number) => {
+    const response = await Request.get<Book[]>(API_ENDPOINTS.SIMILAR_BOOKS(id));
+    return response;
+  }, []);
+
+  const searchBooks = useCallback(async (keyword: string) => {
+    const response = await Request.get<Book[]>(API_ENDPOINTS.SEARCH_PRODUCTS, {
+      params: { q: keyword },
+    });
+    return response;
+  }, []);
+
   /**
    * Manually clears the entire book cache
    * Useful for forcing data refresh
@@ -121,6 +136,8 @@ export const useBook = () => {
     deleteBook,
     // getTopSellingBooks,
     getBookFeaturedCollections,
+    getSimilarBooks,
+    searchBooks,
     clearCache,
   };
 };
