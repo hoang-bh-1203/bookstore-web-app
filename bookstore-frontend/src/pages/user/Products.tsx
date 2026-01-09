@@ -522,12 +522,18 @@ export default function ProductsPage() {
                             }}
                           />
                         </div>
-                        <Button onClick={handleSemanticSearch} disabled={!semanticQuery.trim()}>
+                        <Button
+                          onClick={handleSemanticSearch}
+                          disabled={!semanticQuery.trim()}
+                        >
                           <Search className="h-4 w-4 mr-2" />
                           Tìm kiếm
                         </Button>
                         {semanticSearchActive && (
-                          <Button variant="outline" onClick={clearSemanticSearch}>
+                          <Button
+                            variant="outline"
+                            onClick={clearSemanticSearch}
+                          >
                             <X className="h-4 w-4 mr-2" />
                             Xóa
                           </Button>
